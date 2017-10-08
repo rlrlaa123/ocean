@@ -40,7 +40,7 @@ class SNA():
         print nx.number_of_edges(self.G)
 
     def centrality(self):
-        with open('community.csv','r') as csvfile:
+        with open('community_test.csv','rU') as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
                 cluster = row[1:]
@@ -61,15 +61,17 @@ class SNA():
                 C.add_nodes_from(cluster)
                 C.add_edges_from(edges)
 
-                print nx.number_of_nodes(C)
-                print nx.number_of_edges(C)
+                node_count=nx.number_of_nodes(C)
+                edge_count=nx.number_of_edges(C)
 
                 cent = self.degree_centrality_custom(C)
                 print cent
                 with open('centrality_1.csv','a') as csvfile:
                     writer = csv.writer(csvfile)
+                    writer.writerow(['Community '+row[0],'Node: '+str(node_count),'Edge: '+str(edge_count)])
                     for i,j in cent.items():
                         writer.writerow([i,j])
+                print 'Finished Community'+row[0]
 
     def clustering(self):
         partition = community.best_partition(self.G)
