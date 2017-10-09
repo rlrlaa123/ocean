@@ -13,7 +13,7 @@ import community
 class SNA():
     def __init__(self):
         path = ""
-        data = pd.read_csv(path + '../../worldoss:ocean/Web_Crawler/test1.csv', error_bad_lines=False, header=None,
+        data = pd.read_csv(path + '../../worldoss:ocean/Web_Crawler/new_repo_topic_data.csv', error_bad_lines=False, header=None,
                            sep=",", delimiter='\n')  # pandas 라이브러리를 이용해서 SNA 분석 csv 파일 불러오기
         # Creating node list
         node = []
@@ -40,7 +40,7 @@ class SNA():
         print nx.number_of_edges(self.G)
 
     def centrality(self):
-        with open('community_test.csv','rU') as csvfile:
+        with open('community.csv','rU') as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
                 cluster = row[1:]
@@ -64,9 +64,11 @@ class SNA():
                 node_count=nx.number_of_nodes(C)
                 edge_count=nx.number_of_edges(C)
 
+                print node_count, edge_count
+
                 cent = self.degree_centrality_custom(C)
                 print cent
-                with open('centrality_1.csv','a') as csvfile:
+                with open('centrality.csv','a') as csvfile:
                     writer = csv.writer(csvfile)
                     writer.writerow(['Community '+row[0],'Node: '+str(node_count),'Edge: '+str(edge_count)])
                     for i,j in cent.items():
@@ -82,11 +84,12 @@ class SNA():
                 members = list_nodes = [nodes for nodes in partition.keys() if partition[nodes] == community_num]
                 print members
                 writer.writerow([community_num]+members)
-
+    nx.degree_centrality()
     def degree_centrality_custom(self,G):
         centrality = {}
         s = 1.0
-        centrality = dict((n, d * s) for n, d in G.degree())
+        print G.degree()
+        centrality = dict((n, d * s) for n, d in G.degree_iter())
         return centrality
 
 sna = SNA()
