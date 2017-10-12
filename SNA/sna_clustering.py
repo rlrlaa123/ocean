@@ -8,11 +8,12 @@ import csv
 import community
 import pprint
 import operator
+import datetime
 
 class SNA():
     def create_graph(self):
         path = ""
-        data = pd.read_csv(path + '../../worldoss:ocean/Web_Crawler/generated_repo_topic_data.csv', error_bad_lines=False, header=None,
+        data = pd.read_csv(path + '4/new_repo_topic_data4.csv', error_bad_lines=False, header=None,
                            sep=",", delimiter='\n')  # pandas 라이브러리를 이용해서 SNA 분석 csv 파일 불러오기
         # Creating node list
         node = []
@@ -38,24 +39,30 @@ class SNA():
         print nx.number_of_nodes(self.G)
         print nx.number_of_edges(self.G)
 
-    def centrality(self):
+    def match_edgelist(self,row):
+        cluster = row[1:]
+        edges = []
+        # print cluster
+        for index,i in enumerate(self.edges):
+            for j in cluster:
+                if i[0] == j:
+                    for k in cluster:
+                        if i[1] == k:
+                            edges.append(i)
+                            continue
+                if i[1] == j:
+                    for k in cluster:
+                        if i[0] == k:
+                            edges.append(i)
+                            continue
+        return cluster, edges
 
-        with open('community_test.csv','rU') as csvfile:
+    def centrality(self):
+        with open('4/community4.csv','rU') as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
-                cluster = row[1:]
-                edges = []
-                print cluster
-                for i in self.edges:
-                    for j in cluster:
-                        if i[0] == j:
-                            for k in cluster:
-                                if i[1] == k:
-                                    edges.append(i)
-                        if i[1] == j:
-                            for k in cluster:
-                                if i[0] == k:
-                                    edges.append(i)
+                cluster, edges = self.match_edgelist(row)
+                edges = list(set(edges))
 
                 C = nx.Graph()
                 C.add_nodes_from(cluster)
@@ -70,16 +77,16 @@ class SNA():
 
                 print cent
 
-                with open('centrality_test.csv','a') as csvfile:
+                with open('4/centrality4.csv','a') as csvfile:
                     writer = csv.writer(csvfile)
                     writer.writerow(['Community '+row[0],'Node: '+str(node_count),'Edge: '+str(edge_count)])
                     for i,j in cent.items():
                         writer.writerow([i,j])
                 print 'Finished Community '+row[0]
 
-    def clustering(self):
+    def clustering(self,save_filename):
         partition = community.best_partition(self.G)
-        with open('community.csv','a') as csvfile:
+        with open(save_filename,'a') as csvfile:
             writer = csv.writer(csvfile)
             for community_num in set(partition.values()):
                 print "Community", community_num
@@ -100,7 +107,7 @@ class SNA():
         self.centrality = {}
         community = ''
 
-        with open('centrality2.csv','r') as csvfile:
+        with open('4/centrality4.csv','r') as csvfile:
             reader = csv.reader(csvfile)
             for i in reader:
                 if 'Community' in i[0]:
@@ -123,7 +130,7 @@ class SNA():
                 if count == 50:
                     break
 
-            with open('highest_centrality2.csv', 'a') as csvfile:
+            with open('4/highest_centrality4.csv', 'a') as csvfile:
                 writer = csv.writer(csvfile)
                 if len(i) == 11:
                     writer.writerow([int(i[10]),len(self.centrality[i].items())]+high_centrality)
@@ -150,13 +157,42 @@ class SNA():
             for i in created:
                 writer.writerow(i)
 
+    def clustering_partially(self):
+        with open('4/community4.csv','r') as csvfile:
+            reader = csv.reader(csvfile)
+            for row in reader:
+                cluster, edges = self.match_edgelist(row)
+                edges = list(set(edges))
+
+                C = nx.Graph()
+                C.add_nodes_from(cluster)
+                C.add_edges_from(edges)
+
+                node_count = nx.number_of_nodes(C)
+                edge_count = nx.number_of_edges(C)
+
+                print node_count, edge_count
+
+                self.clustering('4/community_partial4.csv')
+                cent = self.degree_centrality_custom(C)
+
+                print cent
+
+                with open('4/centrality_partial4.csv', 'a') as csvfile:
+                    writer = csv.writer(csvfile)
+                    writer.writerow(['Community ' + row[0], 'Node: ' + str(node_count), 'Edge: ' + str(edge_count)])
+                    for i, j in cent.items():
+                        writer.writerow([i, j])
+                print 'Finished Community ' + row[0]
+
 sna = SNA()
-# sna.create_graph()
-# sna.clustering()
+sna.create_graph()
+# sna.clustering('4/community_test.csv')
 # sna.centrality()
-sna.centrality_parser()
-sna.highest_centrality()
+# sna.centrality_parser()
+# sna.highest_centrality()
 # sna.matchrepository()
+sna.clustering_partially()
 
 # #drawing
 # size = float(len(set(partition.values())))
