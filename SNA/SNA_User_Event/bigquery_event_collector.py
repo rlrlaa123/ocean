@@ -3,6 +3,7 @@
 ## Bigquery credential file needed!
 ## Reference: https://cloud.google.com/bigquery/docs/authentication/service-account-file
 
+import requests
 import os
 import csv
 import collections
@@ -55,26 +56,33 @@ WHERE
 
 QUERY = {
     'PullRequestReviewComment':PullRequestReviewCommentQuery,
-    # 'CommitComment':CommitCommentQuery,
+    'CommitComment':CommitCommentQuery,
     'IssueComment':IssueCommentQuery,
 }
 REPOSITORY = [
-    # 'facebook/react',
+    # 'jquery/jquery',
+    'facebook/react',
     'twbs/bootstrap',
     'tensorflow/tensorflow',
-    # 'd3/d3',
+    'd3/d3',
     'scikit-learn/scikit-learn',
-    # 'airbnb/javascript',
-    # 'angular/angular.js',
-    # 'torvalds/linux',
+    'airbnb/javascript',
+    'angular/angular.js',
+    'torvalds/linux',
     'apple/swift',
-    # 'Microsoft/vscode',
+    'Microsoft/vscode',
     'Samsung/iotjs',
     'Samsung/GearVRf',
     'Samsung/TizenRT',
     'naver/pinpoint',
-    # 'ncsoft/Unreal.js-core',
+    'ncsoft/Unreal.js-core',
 ]
+class UserDoesNotExistError(Exception):
+    def __init__(self, msg):
+        self.msg = msg
+
+    def __str__(self):
+        return self.msg
 
 class EventAnalysis():
     def __init__(self):
@@ -123,9 +131,10 @@ class EventAnalysis():
                         if query == 'PullRequestReviewComment':
                             writer.writerow([repo,query,row[0],row[1],0,0,0,0,counter[row]])
                         elif query == 'CommitComment':
-                            writer.writerow([repo,query,0,0,row[0],row[1],0,0,counter[row]])
+                            commit_user_id = self.collectCommitUser(row[1],repo)
+                            writer.writerow([repo,query,0,0,row[0],commit_user_id,0,0,counter[row]])
                         elif query == 'IssueComment':
-                            writer.writerow([repo,query,0,0,0,0,row[0],row[1],counter[row]])
+                            writer.writerow([repo,query,0,0,0,0,row[0],commit_user_id,counter[row]])
                 print ('Query Finished...\n')
     def snaAnalysis(self):
         for repo in REPOSITORY:
@@ -341,11 +350,35 @@ class EventAnalysis():
                 counter = collections.Counter(type)
                 print (counter)
                 print ('\n')
+    def Request(self,url):
+        id = 'rlrlaa123'
+        pw = 'ehehdd009'
+        return requests.get(url,auth=(id,pw))
+    def collectCommitUser(self,commit_id,repo_name):
+        try:
+            url_commit_id = 'https://api.github.com/repos/'+repo_name+'/commits/'+str(commit_id)
+            print (url_commit_id)
+            content = self.Request(url_commit_id).json()
+            if content['committer'] != None:
+                user_login = content['committer']['login']
+                url_commit_user = 'https://api.github.com/users/' + str(user_login)
+                content = self.Request(url_commit_user).json()
+
+                return content['id']
+            else:
+                raise UserDoesNotExistError('User Does Not Exist')
+        except UserDoesNotExistError as e:
+            user_name = content['commit']['committer']['name']
+            return user_name
+        except KeyError as e: # Limit에 도달 했을 시 어떻게 할지..
+            print ('Limit reached...')
+            sleep(60)
+
 
 
 bquery = EventAnalysis()
-# bquery.collectEvent()
+bquery.collectEvent()
 # bquery.snaAnalysis()
 # bquery.typeCount()
 # bquery.userCategorize()
-bquery.categorizedUserCount()
+# bquery.categorizedUserCount()
