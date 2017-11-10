@@ -10,6 +10,7 @@ import collections
 import networkx as nx
 import scipy
 import matplotlib.pyplot as plt
+import time
 
 
 # create directory: os.mkdir
@@ -28,6 +29,7 @@ FROM
   `github-sna.SNA.15_17_eventactors`
 WHERE
   event_type = 'PullRequestReviewCommentEvent' and
+  JSON_EXTRACT(JSON_EXTRACT(JSON_EXTRACT(event_payload, '$.pull_request'), '$.user'), '$.id') != '9999.9' and
   repo_name = """
 
 CommitCommentQuery = """
@@ -40,6 +42,7 @@ FROM
   `github-sna.SNA.15_17_eventactors`
 WHERE
   event_type = 'CommitCommentEvent' and
+  JSON_EXTRACT(JSON_EXTRACT(event_payload, '$.comment'), '$.commit_id') != '9999.9' and
   repo_name = """
 
 IssueCommentQuery = """
@@ -52,6 +55,7 @@ FROM
   `github-sna.SNA.15_17_eventactors`
 WHERE
   event_type = 'IssueCommentEvent' and
+  JSON_EXTRACT(JSON_EXTRACT(JSON_EXTRACT(event_payload, '$.issue'), '$.user'), '$.id') != '9999.9' and
   repo_name = """
 
 QUERY = {
@@ -131,10 +135,13 @@ class EventAnalysis():
                         if query == 'PullRequestReviewComment':
                             writer.writerow([repo,query,row[0],row[1],0,0,0,0,counter[row]])
                         elif query == 'CommitComment':
-                            commit_user_id = self.collectCommitUser(row[1],repo)
+                            while(True):
+                                commit_user_id = self.collectCommitUser(row[1],repo)
+                                if commit_user_id != 'Limit':
+                                    break
                             writer.writerow([repo,query,0,0,row[0],commit_user_id,0,0,counter[row]])
                         elif query == 'IssueComment':
-                            writer.writerow([repo,query,0,0,0,0,row[0],commit_user_id,counter[row]])
+                            writer.writerow([repo,query,0,0,0,0,row[0],row[1],counter[row]])
                 print ('Query Finished...\n')
     def snaAnalysis(self):
         for repo in REPOSITORY:
@@ -145,11 +152,11 @@ class EventAnalysis():
                     'edge_list':[],
                     'density':0
                 },
-                # 'CommitComment': {
-                #     'node_list':[],
-                #     'edge_list':[],
-                #     'density':0
-                # },
+                'CommitComment': {
+                    'node_list':[],
+                    'edge_list':[],
+                    'density':0
+                },
                 'IssueComment': {
                     'node_list':[],
                     'edge_list':[],
@@ -163,10 +170,10 @@ class EventAnalysis():
                         sna['PullRequestReviewComment']['node_list'].append(row[2])
                         sna['PullRequestReviewComment']['node_list'].append(row[3])
                         sna['PullRequestReviewComment']['edge_list'].append((row[2],row[3],int(row[-1])))
-                    # elif row[1] == 'CommitComment':
-                    #     sna['CommitComment']['node_list'].append(row[4])
-                    #     sna['CommitComment']['node_list'].append(row[5])
-                    #     sna['CommitComment']['edge_list'].append((row[4], row[5], int(row[-1])))
+                    elif row[1] == 'CommitComment':
+                        sna['CommitComment']['node_list'].append(row[4])
+                        sna['CommitComment']['node_list'].append(row[5])
+                        sna['CommitComment']['edge_list'].append((row[4], row[5], int(row[-1])))
                     elif row[1] == 'IssueComment':
                         sna['IssueComment']['node_list'].append(row[6])
                         sna['IssueComment']['node_list'].append(row[7])
@@ -221,11 +228,11 @@ class EventAnalysis():
                             user_eigenvector[user]
                         ])
 
-                # print ('START DENSITY...')
+                print ('START DENSITY...')
                 if event == 'PullRequestReviewComment':
                     sna[event]['density'] = nx.density(G)
-                # elif event == 'CommitComment':
-                #     sna[event]['density'] = nx.density(G)
+                elif event == 'CommitComment':
+                    sna[event]['density'] = nx.density(G)
                 elif event == 'IssueComment':
                     sna[event]['density'] = nx.density(G)
                 print(event+' Density: '+str(sna[event]['density']))
@@ -244,6 +251,9 @@ class EventAnalysis():
                     elif row[1] == 'PullRequestReviewComment':
                         user.append(row[2])
                         user.append(row[3])
+                    elif row[1] == 'CommitComment':
+                        user.append(row[4])
+                        user.append(row[5])
 
                 user = list(set(user))
 
@@ -253,6 +263,8 @@ class EventAnalysis():
                         'IssueComment':0,
                         'PullRequest':0,
                         'PullRequestComment':0,
+                        'Commit':0,
+                        'CommitComment':0,
                     }
             with open(repo_name+'/'+repo_name+'.csv') as csvfile:
                 reader = csv.reader(csvfile)
@@ -271,9 +283,16 @@ class EventAnalysis():
                         for u in user:
                             if u == row[3]:
                                 user_type[u]['PullRequest']+=1
+                    elif row[1] == 'CommitComment':
+                        for u in user:
+                            if u == row[4]:
+                                user_type[u]['CommitComment']+=1
+                        for u in user:
+                            if u == row[5]:
+                                user_type[u]['Commit']+=1
 
             with open(repo_name+'/'+repo_name+'_TypeCount'+'.csv','a') as csvfile:
-                writer = csv.DictWriter(csvfile,fieldnames=['user','Issue','IssueComment','PullRequest','PullRequestComment'])
+                writer = csv.DictWriter(csvfile,fieldnames=['user','Issue','IssueComment','Commit','CommitComment','PullRequest','PullRequestComment'])
                 writer.writeheader()
                 for user in user_type:
                     user_type[user]['user']=user
@@ -363,7 +382,7 @@ class EventAnalysis():
                 user_login = content['committer']['login']
                 url_commit_user = 'https://api.github.com/users/' + str(user_login)
                 content = self.Request(url_commit_user).json()
-
+                time.sleep(1.5)
                 return content['id']
             else:
                 raise UserDoesNotExistError('User Does Not Exist')
@@ -372,13 +391,13 @@ class EventAnalysis():
             return user_name
         except KeyError as e: # Limit에 도달 했을 시 어떻게 할지..
             print ('Limit reached...')
-            sleep(60)
+            return 'Limit'
 
 
 
 bquery = EventAnalysis()
 bquery.collectEvent()
-# bquery.snaAnalysis()
-# bquery.typeCount()
+bquery.snaAnalysis()
+bquery.typeCount()
 # bquery.userCategorize()
 # bquery.categorizedUserCount()
