@@ -87,6 +87,12 @@ class UserDoesNotExistError(Exception):
 
     def __str__(self):
         return self.msg
+class NotFoundError(Exception):
+    def __init__(self, msg):
+        self.msg = msg
+
+    def __str__(self):
+        return self.msg
 
 class EventAnalysis():
     def __init__(self):
@@ -135,10 +141,7 @@ class EventAnalysis():
                         if query == 'PullRequestReviewComment':
                             writer.writerow([repo,query,row[0],row[1],0,0,0,0,counter[row]])
                         elif query == 'CommitComment':
-                            while(True):
-                                commit_user_id = self.collectCommitUser(row[1],repo)
-                                if commit_user_id != 'Limit':
-                                    break
+                            commit_user_id = self.collectCommitUser(row[1],repo)
                             writer.writerow([repo,query,0,0,row[0],commit_user_id,0,0,counter[row]])
                         elif query == 'IssueComment':
                             writer.writerow([repo,query,0,0,0,0,row[0],row[1],counter[row]])
@@ -375,23 +378,34 @@ class EventAnalysis():
         return requests.get(url,auth=(id,pw))
     def collectCommitUser(self,commit_id,repo_name):
         try:
+            time.sleep(1.5)
             url_commit_id = 'https://api.github.com/repos/'+repo_name+'/commits/'+str(commit_id)
             print (url_commit_id)
             content = self.Request(url_commit_id).json()
+            url_limit = 'https://api.github.com/rate_limit'
             if content['committer'] != None:
                 user_login = content['committer']['login']
                 url_commit_user = 'https://api.github.com/users/' + str(user_login)
+                print (url_commit_user)
+                url_limit = 'https://api.github.com/rate_limit'
+                print(self.Request(url_limit).json()['rate']['remaining'])
                 content = self.Request(url_commit_user).json()
-                time.sleep(1.5)
                 return content['id']
+            # elif content['message'] == 'Not Found':
+            #     raise NotFoundError
             else:
                 raise UserDoesNotExistError('User Does Not Exist')
         except UserDoesNotExistError as e:
             user_name = content['commit']['committer']['name']
             return user_name
-        except KeyError as e: # Limit에 도달 했을 시 어떻게 할지..
-            print ('Limit reached...')
-            return 'Limit'
+        # except NotFoundError as e:
+        #     print (e)
+        #     return 'Not Found'
+        except KeyError as e:
+            print (e)
+            return 'Not Found'
+        # except KeyError as e: # Limit에 도달 했을 시
+        #     print ('Limit reached...')
 
 
 
