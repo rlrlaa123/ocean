@@ -63,24 +63,6 @@ QUERY = {
     'CommitComment':CommitCommentQuery,
     'IssueComment':IssueCommentQuery,
 }
-REPOSITORY = [
-    # 'jquery/jquery',
-    'facebook/react',
-    'twbs/bootstrap',
-    'tensorflow/tensorflow',
-    'd3/d3',
-    'scikit-learn/scikit-learn',
-    'airbnb/javascript',
-    'angular/angular.js',
-    'torvalds/linux',
-    'apple/swift',
-    'Microsoft/vscode',
-    'Samsung/iotjs',
-    'Samsung/GearVRf',
-    'Samsung/TizenRT',
-    'naver/pinpoint',
-    'ncsoft/Unreal.js-core',
-]
 class UserDoesNotExistError(Exception):
     def __init__(self, msg):
         self.msg = msg
@@ -100,6 +82,29 @@ class EventAnalysis():
         # self.client = bigquery.Client()
         service_account = 'Github-SNA-6cf7f22bd6fb.json'
         self.client = bigquery.Client.from_service_account_json(service_account)
+        self.REPOSITORY = []
+
+    def getRepositories(self):
+        with open('sorted_license_korea.csv', 'r') as csvfile:
+            reader = csv.reader(csvfile)
+            next(reader)
+            for i in reader:
+                self.REPOSITORY.append(i[1])
+        self.REPOSITORY.remove('airbnb/javascript')
+        self.REPOSITORY.remove('angular/angular.js')
+        self.REPOSITORY.remove('apple/swift')
+        self.REPOSITORY.remove('d3/d3')
+        self.REPOSITORY.remove('facebook/react')
+        self.REPOSITORY.remove('Microsoft/vscode')
+        self.REPOSITORY.remove('naver/pinpoint')
+        self.REPOSITORY.remove('ncsoft/Unreal.js-core')
+        self.REPOSITORY.remove('Samsung/iotjs')
+        self.REPOSITORY.remove('Samsung/TizenRT')
+        self.REPOSITORY.remove('scikit-learn/scikit-learn')
+        self.REPOSITORY.remove('tensorflow/tensorflow')
+        self.REPOSITORY.remove('torvalds/linux')
+        self.REPOSITORY.remove('twbs/bootstrap')
+        # print (self.REPOSITORY)
     def collectEvent(self):
         # Iterate Repositories
         for repo in REPOSITORY:
@@ -381,7 +386,6 @@ class EventAnalysis():
                 # print (type_dict)
 
                     writer.writerow(type_dict)
-
     def Request(self,url):
         id = 'rlrlaa123'
         pw = 'ehehdd009'
@@ -412,8 +416,9 @@ class EventAnalysis():
             print (e)
             return 'Not Found'
 bquery = EventAnalysis()
-# bquery.collectEvent()
-# bquery.snaAnalysis()
-# bquery.typeCount()
-# bquery.userCategorize()
+bquery.getRepositories()
+bquery.collectEvent()
+bquery.snaAnalysis()
+bquery.typeCount()
+bquery.userCategorize()
 bquery.categorizedUserCount()
