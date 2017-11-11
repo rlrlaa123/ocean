@@ -301,22 +301,7 @@ class EventAnalysis():
                     user_type[user]['user']=user
                     writer.writerow(user_type[user])
     def userCategorize(self):
-        # 'Issue','IssueComment','PullRequest','PullRequestComment',
-        #  0,0,0,1, Type 1
-        #  0,0,1,0, Type 2
-        #  0,0,1,1, Type 3
-        #  0,1,0,0, Type 4
-        #  0,1,0,1, Type 5
-        #  0,1,1,0, Type 6
-        #  0,1,1,1, Type 7
-        #  1,0,0,0, Type 8
-        #  1,0,0,1, Type 9
-        #  1,0,1,0, Type 10
-        #  1,0,1,1, Type 11
-        #  1,1,0,0, Type 12
-        #  1,1,0,1, Type 13
-        #  1,1,1,0, Type 14
-        #  1,1,1,1, Type 15
+        # 'Issue','IssueComment','Commit','CommitComment','PullRequest','PullRequestComment',
         for repo in REPOSITORY:
             print (repo+' User Categorize Starts...')
             repo_name = repo.replace('/',':')
@@ -325,60 +310,85 @@ class EventAnalysis():
                 reader = csv.reader(csvfile)
                 next(reader)
                 for row in reader:
-                    if row[1] == 0 and row[2] == 0 and row[3] == 0 and row[4] != 0:
-                        user_type[row[0]]='Type 1'
-                    elif row[1] == '0' and row[2] == '0' and row[3] != '0' and row[4] == '0':
-                        user_type[row[0]]='Type 2'
-                    elif row[1] == '0' and row[2] == '0' and row[3] != '0' and row[4] != '0':
-                        user_type[row[0]]='Type 3'
-                    elif row[1] == '0' and row[2] != '0' and row[3] == '0' and row[4] == '0':
-                        user_type[row[0]]='Type 4'
-                    elif row[1] == '0' and row[2] != '0' and row[3] == '0' and row[4] != '0':
-                        user_type[row[0]]='Type 5'
-                    elif row[1] == '0' and row[2] != '0' and row[3] != '0' and row[4] == '0':
-                        user_type[row[0]]='Type 6'
-                    elif row[1] == '0' and row[2] != '0' and row[3] != '0' and row[4] != '0':
-                        user_type[row[0]]='Type 7'
-                    elif row[1] != '0' and row[2] == '0' and row[3] == '0' and row[4] == '0':
-                        user_type[row[0]]='Type 8'
-                    elif row[1] != '0' and row[2] == '0' and row[3] == '0' and row[4] != '0':
-                        user_type[row[0]]='Type 9'
-                    elif row[1] != '0' and row[2] == '0' and row[3] != '0' and row[4] == '0':
-                        user_type[row[0]]='Type 10'
-                    elif row[1] != '0' and row[2] == '0' and row[3] != '0' and row[4] != '0':
-                        user_type[row[0]]='Type 11'
-                    elif row[1] != '0' and row[2] != '0' and row[3] == '0' and row[4] == '0':
-                        user_type[row[0]]='Type 12'
-                    elif row[1] != '0' and row[2] != '0' and row[3] == '0' and row[4] != '0':
-                        user_type[row[0]]='Type 13'
-                    elif row[1] != '0' and row[2] != '0' and row[3] != '0' and row[4] == '0':
-                        user_type[row[0]]='Type 14'
-                    elif row[1] != '0' and row[2] != '0' and row[3] != '0' and row[4] != '0':
-                        user_type[row[0]]='Type 15'
+
+                    issue = row[1]
+                    issuecomment = row[2]
+                    commit = row[3]
+                    commitcomment = row[4]
+                    pullrequest = row[5]
+                    pullrequestcomment = row[6]
+
+                    if len(str(row[1])) > 1:
+                        issue = '1'
+                    if len(str(row[2])) > 1:
+                        issuecomment = '1'
+                    if len(str(row[3])) > 1:
+                        commit = '1'
+                    if len(str(row[4])) > 1:
+                        commitcomment = '1'
+                    if len(str(row[5])) > 1:
+                        pullrequest = '1'
+                    if len(str(row[6])) > 1:
+                        pullrequestcomment = '1'
+                    if str(row[1]) != '0':
+                        issue = '1'
+                    if str(row[2]) != '0':
+                        issuecomment = '1'
+                    if str(row[3]) != '0':
+                        commit = '1'
+                    if str(row[4]) != '0':
+                        commitcomment = '1'
+                    if str(row[5]) != '0':
+                        pullrequest = '1'
+                    if str(row[6]) != '0':
+                        pullrequestcomment = '1'
+
+                    countedevents = issue+issuecomment+commit+commitcomment+pullrequest+pullrequestcomment
+
+                    case = []
+                    for i in range(64):
+                        case.append('{0:06b}'.format(i))
+                    for binarytype in case:
+                        if countedevents == binarytype:
+                            user_type[row[0]]='Type ' + str(int(binarytype,2))
+
             with open(repo_name+'/'+repo_name+'_Categorized.csv','a') as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerow(['user','type'])
                 for user in user_type:
                     writer.writerow([user,user_type[user]])
     def categorizedUserCount(self):
-        for repo in REPOSITORY:
-            print (repo+' Categorized User Count Starts...')
-            repo_name = repo.replace('/',':')
-            type = []
-            with open(repo_name+'/'+repo_name+'_Categorized.csv','r') as csvfile:
-                reader = csv.reader(csvfile)
-                for row in reader:
-                    type.append(row[1])
-                counter = collections.Counter(type)
-                print (counter)
-                print ('\n')
+        with open('RepoCategorized.csv'
+                  '', 'a') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=['Repository'] + ['Type '+str(i) for i in range(1, 64)])
+            writer.writeheader()
+            for repo in REPOSITORY:
+                repo_name = repo.replace('/',':')
+                type_dict = {
+                    'Type '+str(i):0 for i in range(1,64)
+                }
+                type_dict['Repository'] = repo_name
+                print (repo+' Categorized User Count Starts...')
+                type = []
+                with open(repo_name+'/'+repo_name+'_Categorized.csv','r') as csvfile:
+                    reader = csv.reader(csvfile)
+                    next(reader)
+                    for row in reader:
+                        type.append(row[1])
+                    counter = collections.Counter(type)
+                    for i in counter:
+                        type_dict[i] = counter[i]
+                # print (type_dict)
+
+                    writer.writerow(type_dict)
+
     def Request(self,url):
         id = 'rlrlaa123'
         pw = 'ehehdd009'
         return requests.get(url,auth=(id,pw))
     def collectCommitUser(self,commit_id,repo_name):
         try:
-            time.sleep(1.5)
+            # time.sleep(1.5)
             url_commit_id = 'https://api.github.com/repos/'+repo_name+'/commits/'+str(commit_id)
             print (url_commit_id)
             content = self.Request(url_commit_id).json()
@@ -398,20 +408,12 @@ class EventAnalysis():
         except UserDoesNotExistError as e:
             user_name = content['commit']['committer']['name']
             return user_name
-        # except NotFoundError as e:
-        #     print (e)
-        #     return 'Not Found'
         except KeyError as e:
             print (e)
             return 'Not Found'
-        # except KeyError as e: # Limit에 도달 했을 시
-        #     print ('Limit reached...')
-
-
-
 bquery = EventAnalysis()
-bquery.collectEvent()
-bquery.snaAnalysis()
-bquery.typeCount()
+# bquery.collectEvent()
+# bquery.snaAnalysis()
+# bquery.typeCount()
 # bquery.userCategorize()
-# bquery.categorizedUserCount()
+bquery.categorizedUserCount()
