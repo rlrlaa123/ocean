@@ -86,25 +86,11 @@ class EventAnalysis():
         self.REPOSITORY = []
 
     def getRepositories(self):
-        with open('sorted_license_korea.csv', 'r') as csvfile:
+        with open('sorted_foreign.csv', 'r') as csvfile:
             reader = csv.reader(csvfile)
             next(reader)
             for i in reader:
-                self.REPOSITORY.append(i[4])
-        self.REPOSITORY.remove('airbnb/javascript')
-        self.REPOSITORY.remove('angular/angular.js')
-        self.REPOSITORY.remove('apple/swift')
-        self.REPOSITORY.remove('d3/d3')
-        self.REPOSITORY.remove('facebook/react')
-        self.REPOSITORY.remove('Microsoft/vscode')
-        self.REPOSITORY.remove('naver/pinpoint')
-        self.REPOSITORY.remove('ncsoft/Unreal.js-core')
-        self.REPOSITORY.remove('Samsung/iotjs')
-        self.REPOSITORY.remove('Samsung/TizenRT')
-        self.REPOSITORY.remove('scikit-learn/scikit-learn')
-        self.REPOSITORY.remove('tensorflow/tensorflow')
-        self.REPOSITORY.remove('torvalds/linux')
-        self.REPOSITORY.remove('twbs/bootstrap')
+                self.REPOSITORY.append(i[0])
         # print (self.REPOSITORY)
     def collectEvent(self,repo):
         repo_name = repo.replace('/',':')
@@ -406,11 +392,13 @@ class EventAnalysis():
             else:
                 raise UserDoesNotExistError('User Does Not Exist')
         except UserDoesNotExistError as e:
+            print (e)
             user_name = content['commit']['committer']['name']
             return user_name
         except KeyError as e:
             print (e)
             return 'Not Found'
+print(datetime.datetime.now())
 bquery = EventAnalysis()
 bquery.getRepositories()
 for repo in bquery.REPOSITORY:
