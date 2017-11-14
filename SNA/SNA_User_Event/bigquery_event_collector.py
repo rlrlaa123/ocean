@@ -20,50 +20,21 @@ import datetime
 
 from google.cloud import bigquery
 
-PullRequestReviewCommentQuery = """
+QUERY = """
 SELECT
   repo_name,
   event_type,
-  actor_id AS pullrequest_comment_actor,
-  JSON_EXTRACT(JSON_EXTRACT(JSON_EXTRACT(event_payload, '$.pull_request'), '$.user'), '$.id') AS pullreqeust_actor
+  pullrequest_comment_actor,
+  pullreqeust_actor,
+  commit_comment_actor,
+  commit_actor,
+  issue_comment_actor,
+  issue_actor
 FROM
-  `github-sna.SNA.15_17_eventactors`
+  `github-sna.SNA.15_17_refined_eventactor`
 WHERE
-  event_type = 'PullRequestReviewCommentEvent' and
-  JSON_EXTRACT(JSON_EXTRACT(JSON_EXTRACT(event_payload, '$.pull_request'), '$.user'), '$.id') != '9999.9' and
   repo_name = """
 
-CommitCommentQuery = """
-SELECT
-  repo_name,
-  event_type,
-  actor_id AS commit_comment_actor,
-  JSON_EXTRACT(JSON_EXTRACT(event_payload, '$.comment'), '$.commit_id') AS commit_actor
-FROM
-  `github-sna.SNA.15_17_eventactors`
-WHERE
-  event_type = 'CommitCommentEvent' and
-  JSON_EXTRACT(JSON_EXTRACT(event_payload, '$.comment'), '$.commit_id') != '9999.9' and
-  repo_name = """
-
-IssueCommentQuery = """
-SELECT
-  repo_name,
-  event_type,
-  actor_id AS issue_comment_actor,
-  JSON_EXTRACT(JSON_EXTRACT(JSON_EXTRACT(event_payload, '$.issue'), '$.user'), '$.id') AS issue_actor
-FROM
-  `github-sna.SNA.15_17_eventactors`
-WHERE
-  event_type = 'IssueCommentEvent' and
-  JSON_EXTRACT(JSON_EXTRACT(JSON_EXTRACT(event_payload, '$.issue'), '$.user'), '$.id') != '9999.9' and
-  repo_name = """
-
-QUERY = {
-    'PullRequestReviewComment':PullRequestReviewCommentQuery,
-    'CommitComment':CommitCommentQuery,
-    'IssueComment':IssueCommentQuery,
-}
 class UserDoesNotExistError(Exception):
     def __init__(self, msg):
         self.msg = msg
@@ -86,7 +57,7 @@ class EventAnalysis():
         self.REPOSITORY = []
 
     def getRepositories(self):
-        with open('sorted_foreign.csv', 'r') as csvfile:
+        with open('global_sorted.csv', 'r') as csvfile:
             reader = csv.reader(csvfile)
             next(reader)
             for i in reader:
@@ -99,43 +70,48 @@ class EventAnalysis():
             os.makedirs(repo_name)
         print (repo_name)
         # Create csv file
-        with open(repo_name+'/'+repo_name+'.csv', 'a') as csvfile:
+        with open(repo_name+'/'+repo_name+'testing.csv', 'a') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(
                 ['repo_name', 'event_type', 'pullrequest_comment_actor', 'pullrequest_actor', 'commit_comment_actor',
                  'commit_actor', 'issue_comment_actor', 'issue_actor','weight'])
             # Iterate Queries
-            for query in QUERY:
-                print ("Query Sent " + str(query) + '...')
-                # Send Query
-                query_job = self.client.query(QUERY[query]+"'"+repo+"'") # LIMIT 10 should be removed...
+            # for query in QUERY:
+            print ("Query Sent...")
+            # Send Query
+            query_job = self.client.query(QUERY+"'"+repo+"'") # LIMIT 10 should be removed...
+            result = query_job.result()
 
-                result = query_job.result()
-                data = []
-                count_list = []
-                for row in result:
-                    if query == 'PullRequestReviewComment':
-                        data.append([row[0],row[1],row[2],row[3],0,0,0,0])
-                        count_list.append((row[2], row[3]))
-                    elif query == 'CommitComment':
-                        data.append([row[0],row[1],0,0,row[2],str(row[3]).replace('"',''),0,0])
-                        count_list.append((row[2],row[3].replace('"','')))
-                    elif query == 'IssueComment':
-                        data.append([row[0],row[1],0,0,0,0,row[2],row[3]])
-                        count_list.append((row[2], row[3]))
-
-                counter = collections.Counter(count_list)
-
-                # Write Results
-                for row in counter:
-                    if query == 'PullRequestReviewComment':
-                        writer.writerow([repo,query,row[0],row[1],0,0,0,0,counter[row]])
-                    elif query == 'CommitComment':
+            data = []
+            count_list = {
+                'PullRequestReviewCommentEvent':[],
+                'CommitCommentEvent':[],
+                'IssueCommentEvent':[],
+            }
+            counter_list = {}
+            for row in result:
+                if row[1] == 'PullRequestReviewCommentEvent':
+                    data.append([row[0],row[1],row[2],row[3],0,0,0,0])
+                    count_list['PullRequestReviewCommentEvent'].append((row[2], row[3]))
+                elif row[1] == 'CommitCommentEvent':
+                    data.append([row[0],row[1],0,0,row[4],str(row[5]).replace('"',''),0,0])
+                    count_list['CommitCommentEvent'].append((row[4],row[5].replace('"','')))
+                elif row[1] == 'IssueCommentEvent':
+                    data.append([row[0],row[1],0,0,0,0,row[6],row[7]])
+                    count_list['IssueCommentEvent'].append((row[6], row[7]))
+            for count in count_list:
+                counter_list[count] = collections.Counter(count_list[count])
+            print (counter_list)
+            for event in counter_list:
+                for row in counter_list[event]:
+                    if event == 'PullRequestReviewCommentEvent':
+                        writer.writerow([repo,event,row[0],row[1],0,0,0,0,counter_list[event][row]])
+                    elif event == 'CommitCommentEvent':
                         commit_user_id = self.collectCommitUser(row[1],repo)
-                        writer.writerow([repo,query,0,0,row[0],commit_user_id,0,0,counter[row]])
-                    elif query == 'IssueComment':
-                        writer.writerow([repo,query,0,0,0,0,row[0],row[1],counter[row]])
-            print ('Query Finished...\n')
+                        writer.writerow([repo,event,0,0,row[0],commit_user_id,0,0,counter_list[event][row]])
+                    elif event == 'IssueCommentEvent':
+                        writer.writerow([repo,event,0,0,0,0,row[0],row[1],counter_list[event][row]])
+        print ('Query Finished...\n')
     def snaAnalysis(self,repo):
         repo_name = repo.replace('/',':')
         sna = {
@@ -398,6 +374,20 @@ class EventAnalysis():
         except KeyError as e:
             print (e)
             return 'Not Found'
+    def classifySWType(self):
+        with open ('sorted_license_korea_original.csv','r') as csvfile:
+            reader = csv.reader(csvfile)
+
+            korea = []
+            for row in reader:
+                korea.append(row)
+            with open('../SNA_Cluster/4.2/Classification/Application SW.csv','r') as csvfile2:
+                reader2 = csv.reader(csvfile2)
+                for row in reader2:
+                    for kor in korea:
+                        # print (row[1])
+                        if kor == row[1]:
+                            print (row[1])
 print(datetime.datetime.now())
 bquery = EventAnalysis()
 bquery.getRepositories()
@@ -408,3 +398,4 @@ for repo in bquery.REPOSITORY:
     bquery.userCategorize(repo)
 bquery.categorizedUserCount()
 print(datetime.datetime.now())
+# bquery.classifySWType()
