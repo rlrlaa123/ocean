@@ -70,7 +70,7 @@ class EventAnalysis():
             os.makedirs(repo_name)
         print (repo_name)
         # Create csv file
-        with open(repo_name+'/'+repo_name+'testing.csv', 'a') as csvfile:
+        with open(repo_name+'/'+repo_name+'.csv', 'a') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(
                 ['repo_name', 'event_type', 'pullrequest_comment_actor', 'pullrequest_actor', 'commit_comment_actor',
@@ -101,7 +101,7 @@ class EventAnalysis():
                     count_list['IssueCommentEvent'].append((row[6], row[7]))
             for count in count_list:
                 counter_list[count] = collections.Counter(count_list[count])
-            print (counter_list)
+
             for event in counter_list:
                 for row in counter_list[event]:
                     if event == 'PullRequestReviewCommentEvent':
@@ -115,17 +115,17 @@ class EventAnalysis():
     def snaAnalysis(self,repo):
         repo_name = repo.replace('/',':')
         sna = {
-            'PullRequestReviewComment': {
+            'PullRequestReviewCommentEvent': {
                 'node_list':[],
                 'edge_list':[],
                 'density':0
             },
-            'CommitComment': {
+            'CommitCommentEvent': {
                 'node_list':[],
                 'edge_list':[],
                 'density':0
             },
-            'IssueComment': {
+            'IssueCommentEvent': {
                 'node_list':[],
                 'edge_list':[],
                 'density':0
@@ -134,18 +134,18 @@ class EventAnalysis():
         with open(repo_name+'/'+repo_name+'.csv','r') as csvfile:
             reader = (csv.reader(csvfile))
             for row in reader:
-                if row[1] == 'PullRequestReviewComment':
-                    sna['PullRequestReviewComment']['node_list'].append(row[2])
-                    sna['PullRequestReviewComment']['node_list'].append(row[3])
-                    sna['PullRequestReviewComment']['edge_list'].append((row[2],row[3],int(row[-1])))
-                elif row[1] == 'CommitComment':
-                    sna['CommitComment']['node_list'].append(row[4])
-                    sna['CommitComment']['node_list'].append(row[5])
-                    sna['CommitComment']['edge_list'].append((row[4], row[5], int(row[-1])))
-                elif row[1] == 'IssueComment':
-                    sna['IssueComment']['node_list'].append(row[6])
-                    sna['IssueComment']['node_list'].append(row[7])
-                    sna['IssueComment']['edge_list'].append((row[6], row[7], int(row[-1])))
+                if row[1] == 'PullRequestReviewCommentEvent':
+                    sna['PullRequestReviewCommentEvent']['node_list'].append(row[2])
+                    sna['PullRequestReviewCommentEvent']['node_list'].append(row[3])
+                    sna['PullRequestReviewCommentEvent']['edge_list'].append((row[2],row[3],int(row[-1])))
+                elif row[1] == 'CommitCommentEvent':
+                    sna['CommitCommentEvent']['node_list'].append(row[4])
+                    sna['CommitCommentEvent']['node_list'].append(row[5])
+                    sna['CommitCommentEvent']['edge_list'].append((row[4], row[5], int(row[-1])))
+                elif row[1] == 'IssueCommentEvent':
+                    sna['IssueCommentEvent']['node_list'].append(row[6])
+                    sna['IssueCommentEvent']['node_list'].append(row[7])
+                    sna['IssueCommentEvent']['edge_list'].append((row[6], row[7], int(row[-1])))
 
         for event in sna:
             print ('START '+repo_name+' '+event+'...')
@@ -197,11 +197,11 @@ class EventAnalysis():
                         ])
 
                 print ('START DENSITY...')
-                if event == 'PullRequestReviewComment':
+                if event == 'PullRequestReviewCommentEvent':
                     sna[event]['density'] = nx.density(G)
-                elif event == 'CommitComment':
+                elif event == 'CommitCommentEvent':
                     sna[event]['density'] = nx.density(G)
-                elif event == 'IssueComment':
+                elif event == 'IssueCommentEvent':
                     sna[event]['density'] = nx.density(G)
                 print(event+' Density: '+str(sna[event]['density']))
             except ZeroDivisionError:
@@ -211,16 +211,16 @@ class EventAnalysis():
         repo_name = repo.replace('/',':')
         user = []
         user_type = {}
-        with open(repo_name+'/'+repo_name+'.csv') as csvfile:
+        with open(repo_name+'/'+repo_name+'.csv', 'r') as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
-                if row[1] == 'IssueComment':
+                if row[1] == 'IssueCommentEvent':
                     user.append(row[6])
                     user.append(row[7])
-                elif row[1] == 'PullRequestReviewComment':
+                elif row[1] == 'PullRequestReviewCommentEvent':
                     user.append(row[2])
                     user.append(row[3])
-                elif row[1] == 'CommitComment':
+                elif row[1] == 'CommitCommentEvent':
                     user.append(row[4])
                     user.append(row[5])
 
@@ -235,24 +235,24 @@ class EventAnalysis():
                     'Commit':0,
                     'CommitComment':0,
                 }
-        with open(repo_name+'/'+repo_name+'.csv') as csvfile:
+        with open(repo_name+'/'+repo_name+'.csv', 'r') as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
-                if row[1] == 'IssueComment':
+                if row[1] == 'IssueCommentEvent':
                     for u in user:
                         if u == row[6]:
                             user_type[u]['IssueComment']+=1 # row[8]
                     for u in user:
                         if u == row[7]:
                             user_type[u]['Issue']+=1
-                elif row[1] == 'PullRequestReviewComment':
+                elif row[1] == 'PullRequestReviewCommentEvent':
                     for u in user:
                         if u == row[2]:
                             user_type[u]['PullRequestComment']+=1
                     for u in user:
                         if u == row[3]:
                             user_type[u]['PullRequest']+=1
-                elif row[1] == 'CommitComment':
+                elif row[1] == 'CommitCommentEvent':
                     for u in user:
                         if u == row[4]:
                             user_type[u]['CommitComment']+=1
@@ -396,6 +396,6 @@ for repo in bquery.REPOSITORY:
     bquery.snaAnalysis(repo)
     bquery.typeCount(repo)
     bquery.userCategorize(repo)
-bquery.categorizedUserCount()
+# bquery.categorizedUserCount()
 print(datetime.datetime.now())
 # bquery.classifySWType()
