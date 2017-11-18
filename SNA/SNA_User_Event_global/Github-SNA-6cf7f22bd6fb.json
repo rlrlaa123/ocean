@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "github-sna",
+  "private_key_id": "6cf7f22bd6fb84cca5ce4ecd7d73ac4499f51cb0",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDB3sRI85T27WJa\nADUo0bs51CMCGq2261ICd4EDn9DjfgoZ4mgRE582NkQNUxopyefb4HLPro0Rrxjd\nkwHSaRkKy88ZZJBykTAegtmYetp5pftGbHuOuM6rAUnOFw89BgQGJj1UzOaMrNzu\nOr1IJGtHJSpkEmUNRBIdvxADEG/dYAc/4gWNSjyC1y5JSSC+6C8dg/QrN83CkYEy\nWfKTowXN1Wj/PZGkobtsJi7R82TSVmBbVWkNw/OUXWfoxcQ9LD60ewcdopJvfsp/\nhYG5l7VVhIb9QngyBLGlAPQiAsJd4amSMmS8VorNlAqx0fpw+XmoXJ4+BsR+MKjc\n64vTbEP1AgMBAAECggEALYKWUEvB7d9W5arDz+PAEDiwyScrHVQLaeHUyt2C40xs\noZvo8w1IpCjD+97EtwebIp4DRaaDniGc9DK0zEh4pPSoFp1pXUOg6KCt5OH+FG12\n2ZbQwHW4qiMAyNzX6mrVmf3zCsuY2XAg4tmuIlfOSSK720cIKr+OgyYdY6LBp9Ug\n9lUNWg8J4L+J7QDAo0Dm140HG/Hq6OHQv9Fd54EMYgJWxLMClISHyKBICjjDiHGT\n8ebvkKQGKA9u9afSWaqdejrEjot8N3SVpnpLD/Cyutjuex4AZeYeg9omrWDtf/iz\nkl4vyrHZ52YfXXHLsINm4HduBza3o0mk7Rev9dwahwKBgQDe8kHQDWYjwPdwUzGc\nVU+cBUkRKMRsXCv53quVjGx4UeLYFNSSIdVZs5NDDjK2QPzozv65u31aCPw0Ls4/\n5ex1hhN+vVCMjjdz3E9a9pqobaYK/ZGRMZvQpcJpHcVFqKnU3M/aqUhScTe0EwM9\nokicqSrKLOG5Ij7T4DGba16cBwKBgQDenPL1DxCAftLxYOsivB891NkXD3I59Tku\nNV6DFhcUawESV4gNXydD25Engs883uP/dO2NlzB66JifJTDvARQvtCMULE1783P3\nKe5QuWQf9Tp5TWJRsQCyTipocjrLIEs/y37O6qakXh/FsSrSXis4Taw1UVrYKEwe\nJD6myi3ZIwKBgQC0RuzU0aDgFG+BUqRxJ8LiBJwa1f5PKREeUeIpYY1slbp6xA1H\nxTgB+uV/eYGkQlS/5HGxulwYa9+USqzYmpFkTvCAsZDqty078M/yXCqfO1ri1Dvb\nTmQSiZb07O/R7hq2V39z7yLeF1LVt/IM6qcQlvJU3YoA7CIlrcovRNkSDQKBgQDQ\nrRtq8PYtHbWro4iHhQVcNrxRy57uCZvSXyD7jKeR8kSM5xSYRExQZfCJsyuFCgN8\nIiXVBpbhgEwhUwGt6br8hMYlUOpJeQuJ8/p8HW1oL77imtHBdkUK4A8M3ZeTdfBU\nGvQCDyCrD7iE3vEfRjsJinYVfO/FlPDViHBadUfJNQKBgHzz13AJghoBEsPzCCwq\nHVi+sA+8hfp7U/eMMBGq92PdD30n9bXgbJV0wVCKdds++5fQzG69vMhyZG+ANx49\nQDdMTHEoOOTMgoDr0bKISFRNxY2yikvvHGNxt/Ty7BdSZ5s3XD4oMfeN6dQxGjih\npuh0zK9vkG+uoHGFarPgqLg7\n-----END PRIVATE KEY-----\n",
+  "client_email": "bigquery@github-sna.iam.gserviceaccount.com",
+  "client_id": "110583056905913742596",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/bigquery%40github-sna.iam.gserviceaccount.com"
+}
