@@ -388,14 +388,26 @@ class EventAnalysis():
                         # print (row[1])
                         if kor == row[1]:
                             print (row[1])
+    def getSWCategory(self):
+        with open('../SNA_Cluster/4.2/Classification/System SW.csv','r') as csvfile:
+            reader=csv.reader(csvfile)
+            with open('RepoCategorized.csv','r') as csvfile2:
+                reader2=csv.reader(csvfile2)
+                for row in reader:
+                    for row2 in reader2:
+                        if row[1]==row2[0].replace(':','/'):
+                            print(row[1])
+            # for row in reader:
+            #     print (row[1])
 print(datetime.datetime.now())
 bquery = EventAnalysis()
-bquery.getRepositories()
-for repo in bquery.REPOSITORY:
-    bquery.collectEvent(repo)
-    bquery.snaAnalysis(repo)
-    bquery.typeCount(repo)
-    bquery.userCategorize(repo)
+# bquery.getRepositories()
+# for repo in bquery.REPOSITORY:
+#     bquery.collectEvent(repo)
+#     bquery.snaAnalysis(repo)
+#     bquery.typeCount(repo)
+#     bquery.userCategorize(repo)
 # bquery.categorizedUserCount()
-print(datetime.datetime.now())
+# print(datetime.datetime.now())
 # bquery.classifySWType()
+bquery.getSWCategory()
