@@ -50,7 +50,98 @@ class EventAnalysis():
         # self.client = bigquery.Client()
         service_account = 'Github-SNA-6cf7f22bd6fb.json'
         self.client = bigquery.Client.from_service_account_json(service_account)
-        self.REPOSITORY = []
+        self.REPOSITORY = [
+            'keystonejs / keystone',
+            'facebook / draft - js',
+            'pandas - dev / pandas',
+            'jessesquires / JSQMessagesViewController',
+            'yiisoft / yii2',
+            'Mantle / Mantle',
+            'SnapKit / SnapKit',
+            'nolimits4web / Framework7',
+            'airbnb / enzyme',
+            'uikit / uikit',
+            'magicalpanda / MagicalRecord',
+            'amazeui / amazeui',
+            'nsqio / nsq',
+            'RestKit / RestKit',
+            'foreverjs / forever',
+            'donnemartin / data - science - ipython - notebooks',
+            'jquery / jquery - mobile',
+            'aurelia / framework',
+            'browserstate / history.js',
+            'ViccAlexander / Chameleon',
+            'facebook / osquery',
+            'capistrano / capistrano',
+            'nicklockwood / iCarousel',
+            'equinusocio / material - theme',
+            'binux / pyspider',
+            'playframework / playframework',
+            'redux - saga / redux - saga',
+            'androidannotations / androidannotations',
+            'go - martini / martini',
+            'rapid7 / metasploit - framework',
+            'imathis / octopress',
+            'facebook / relay',
+            'pingcap / tidb',
+            'Tencent / mars',
+            'sqlmapproject / sqlmap',
+            'CocoaLumberjack / CocoaLumberjack',
+            'hashicorp / terraform',
+            'HelloZeroNet / ZeroNet',
+            'luanfujun / deep - photo - styletransfer',
+            'airyland / vux',
+            'keon / algorithms',
+            'swagger - api / swagger - ui',
+            'grab / front - end - guide',
+            'nathanmarz / storm',
+            'karma - runner / karma',
+            'phacility / phabricator',
+            'iview / iview',
+            'revel / revel',
+            'koalaman / shellcheck',
+            'dmlc / xgboost',
+            'roots / sage',
+            'localstack / localstack',
+            'eslint / eslint',
+            'CosmicMind / Material',
+            'Flipboard / FLEX',
+            'gaearon / redux - devtools',
+            'mitmproxy / mitmproxy',
+            'phalcon / cphalcon',
+            'JedWatson / react - select',
+            'slimphp / Slim',
+            'thoughtbot / bourbon',
+            'hapijs / hapi',
+            'minio / minio',
+            'labstack / echo',
+            'matryer / bitbar',
+            'NetEase / pomelo',
+            'ruby - grape / grape',
+            'home - assistant / home - assistant',
+            'dotnet / coreclr',
+            'saltstack / salt',
+            'dotnet / roslyn',
+            'rwaldron / johnny - five',
+            'nicolargo / glances',
+            'sorin - ionescu / prezto',
+            'laravel / framework',
+            'Netflix / falcor',
+            'teamcapybara / capybara',
+            'ocornut / imgui',
+            'elastic / logstash',
+            'piwik / piwik',
+            'Ramotion / animated - tab - bar',
+            'MithrilJS / mithril.js',
+            'afaqurk / linux - dash',
+            'harthur / brain',
+            'buger / goreplay',
+            'svg / svgo',
+            'TTTAttributedLabel / TTTAttributedLabel',
+            'google / WebFundamentals',
+            'SeleniumHQ / selenium',
+            'Grouper / FlatUIKit'
+        ]
     def getRepositories(self):
         with open('global_original.csv', 'r', encoding='utf-8') as csvfile:
             reader = csv.reader(csvfile)
@@ -501,15 +592,15 @@ class EventAnalysis():
         system = []
         application = []
         global_list = []
-        with open('SNA_Cluster/4.2/Classification/System SW.csv','r') as csvfile:
+        with open('SNA_Cluster/4.2/Classification/System_sorted.csv','r',encoding='utf-8') as csvfile:
             reader=csv.reader(csvfile)
             for row in reader:
-                system.append(row[1])
-        with open('SNA_Cluster/4.2/Classification/Application SW.csv','r') as csvfile:
+                system.append(row[0])
+        with open('SNA_Cluster/4.2/Classification/Application_sorted.csv','r',encoding='utf-8') as csvfile:
             reader=csv.reader(csvfile)
             for row in reader:
-                application.append(row[1])
-        with open('RepoCategorized_global.csv','r') as csvfile2:
+                application.append(row[0])
+        with open('RepoCategorized_global_please.csv','r') as csvfile2:
             reader2=csv.reader(csvfile2)
             next(reader2)
             for row in reader2:
@@ -517,22 +608,26 @@ class EventAnalysis():
         count=0
         for i in set(system) & set(global_list):
             count+=1
+            print (i)
         print (count)
+        # print (set(system) & set(global_list))
         count=0
         for i in set(application) & set(global_list):
             count+=1
+            print(i)
         print (count)
+        # print (set(application) & set(global_list))
 print(datetime.datetime.now())
 bquery = EventAnalysis()
 # bquery.getRepositories()
-# for repo in bquery.REPOSITORY:
-#     bquery.collectEvent(repo)
-#     bquery.snaAnalysis(repo)
-#     bquery.typeCount(repo)
-#     bquery.userCategorize(repo)
-# bquery.categorizedUserCount()
-# bquery.snaDensity()
+for repo in bquery.REPOSITORY:
+    bquery.collectEvent(repo)
+    bquery.snaAnalysis(repo)
+    bquery.typeCount(repo)
+    bquery.userCategorize(repo)
+bquery.categorizedUserCount()
+bquery.snaDensity()
 # print(datetime.datetime.now())
 # bquery.classifySWType()
-# bquery.countRatio()
-bquery.getSWCategory()
+bquery.countRatio()
+# bquery.getSWCategory()
