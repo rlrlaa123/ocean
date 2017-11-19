@@ -52,9 +52,9 @@ class EventAnalysis():
         self.client = bigquery.Client.from_service_account_json(service_account)
         self.REPOSITORY = []
     def getRepositories(self):
-        with open('RepoCategorized_국내_200개_5가지유형_라이센스(1번)_리스트.csv', 'r') as csvfile:
+        with open('global_original.csv', 'r', encoding='utf-8') as csvfile:
             reader = csv.reader(csvfile)
-            next(reader)
+            # next(reader)
             for i in reader:
                 self.REPOSITORY.append(i[0])
         # print (self.REPOSITORY)
@@ -318,7 +318,7 @@ class EventAnalysis():
             for user in user_type:
                 writer.writerow([user,user_type[user]])
     def categorizedUserCount(self):
-        with open('RepoCategorized.csv', 'a') as csvfile:
+        with open('RepoCategorized_global_please.csv', 'a',encoding='utf-8') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=['Repository'] + ['Type '+str(i) for i in range(1, 64)])
             writer.writeheader()
             for repo in self.REPOSITORY:
@@ -329,7 +329,7 @@ class EventAnalysis():
                 type_dict['Repository'] = repo_name
                 print (repo+' Categorized User Count Starts...')
                 type = []
-                with open(repo_name+'/'+repo_name+'_Categorized.csv','r') as csvfile:
+                with open('SNA_User_Event_global/'+repo_name+'/'+repo_name+'_Categorized.csv','r',encoding='utf-8') as csvfile:
                     reader = csv.reader(csvfile)
                     next(reader)
                     for row in reader:
@@ -478,18 +478,20 @@ class EventAnalysis():
 
                 writer.writerow([repo_name,sna['PullRequestReviewCommentEvent']['density'],sna['CommitCommentEvent']['density'],sna['IssueCommentEvent']['density'],sna['TotalEvent']['density']])
     def countRatio(self):
-        with open('../RepoCategorized_domestic_ratio.csv','w') as csvfile:
+        with open('국외_유형분류_이것이 진짜_ratio.csv','w') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(['Repository']+['Type '+str(i) for i in range(1, 64)])
-            with open('../RepoCategorized_domestic.csv','r') as csvfile2:
+            with open('국외_유형분류_이것이 진짜.csv','r',encoding='utf-8') as csvfile2:
                 reader = csv.reader(csvfile2)
                 next(reader)
                 for row in reader:
                     total = 0.0
                     ratio = []
-                    for type in row[1:-1]:
+                    print (row[1:])
+                    for type in row[1:]:
+                        # print (type)
                         total += float(type)
-                    for type in row[1:-1]:
+                    for type in row[1:]:
                         if total != 0:
                             ratio.append(round(float(type)/total*100,1))
                         else:
@@ -507,4 +509,4 @@ bquery.getRepositories()
 # bquery.snaDensity()
 # print(datetime.datetime.now())
 # bquery.classifySWType()
-bquery.countRatio()
+# bquery.countRatio()
