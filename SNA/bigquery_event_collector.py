@@ -497,9 +497,34 @@ class EventAnalysis():
                         else:
                             ratio.append(0)
                     writer.writerow([row[0]]+ratio)
+    def getSWCategory(self):
+        system = []
+        application = []
+        global_list = []
+        with open('SNA_Cluster/4.2/Classification/System SW.csv','r') as csvfile:
+            reader=csv.reader(csvfile)
+            for row in reader:
+                system.append(row[1])
+        with open('SNA_Cluster/4.2/Classification/Application SW.csv','r') as csvfile:
+            reader=csv.reader(csvfile)
+            for row in reader:
+                application.append(row[1])
+        with open('RepoCategorized_global.csv','r') as csvfile2:
+            reader2=csv.reader(csvfile2)
+            next(reader2)
+            for row in reader2:
+                global_list.append(row[0].replace(':','/'))
+        count=0
+        for i in set(system) & set(global_list):
+            count+=1
+        print (count)
+        count=0
+        for i in set(application) & set(global_list):
+            count+=1
+        print (count)
 print(datetime.datetime.now())
 bquery = EventAnalysis()
-bquery.getRepositories()
+# bquery.getRepositories()
 # for repo in bquery.REPOSITORY:
 #     bquery.collectEvent(repo)
 #     bquery.snaAnalysis(repo)
@@ -510,3 +535,4 @@ bquery.getRepositories()
 # print(datetime.datetime.now())
 # bquery.classifySWType()
 # bquery.countRatio()
+bquery.getSWCategory()
