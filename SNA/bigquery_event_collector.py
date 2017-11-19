@@ -51,96 +51,33 @@ class EventAnalysis():
         service_account = 'Github-SNA-6cf7f22bd6fb.json'
         self.client = bigquery.Client.from_service_account_json(service_account)
         self.REPOSITORY = [
-            'keystonejs / keystone',
-            'facebook / draft - js',
-            'pandas - dev / pandas',
-            'jessesquires / JSQMessagesViewController',
-            'yiisoft / yii2',
-            'Mantle / Mantle',
-            'SnapKit / SnapKit',
-            'nolimits4web / Framework7',
-            'airbnb / enzyme',
-            'uikit / uikit',
-            'magicalpanda / MagicalRecord',
-            'amazeui / amazeui',
-            'nsqio / nsq',
-            'RestKit / RestKit',
-            'foreverjs / forever',
-            'donnemartin / data - science - ipython - notebooks',
-            'jquery / jquery - mobile',
-            'aurelia / framework',
-            'browserstate / history.js',
-            'ViccAlexander / Chameleon',
-            'facebook / osquery',
-            'capistrano / capistrano',
-            'nicklockwood / iCarousel',
-            'equinusocio / material - theme',
-            'binux / pyspider',
-            'playframework / playframework',
-            'redux - saga / redux - saga',
-            'androidannotations / androidannotations',
-            'go - martini / martini',
-            'rapid7 / metasploit - framework',
-            'imathis / octopress',
-            'facebook / relay',
-            'pingcap / tidb',
-            'Tencent / mars',
-            'sqlmapproject / sqlmap',
-            'CocoaLumberjack / CocoaLumberjack',
-            'hashicorp / terraform',
-            'HelloZeroNet / ZeroNet',
-            'luanfujun / deep - photo - styletransfer',
-            'airyland / vux',
-            'keon / algorithms',
-            'swagger - api / swagger - ui',
-            'grab / front - end - guide',
-            'nathanmarz / storm',
-            'karma - runner / karma',
-            'phacility / phabricator',
-            'iview / iview',
-            'revel / revel',
-            'koalaman / shellcheck',
-            'dmlc / xgboost',
-            'roots / sage',
-            'localstack / localstack',
-            'eslint / eslint',
-            'CosmicMind / Material',
-            'Flipboard / FLEX',
-            'gaearon / redux - devtools',
-            'mitmproxy / mitmproxy',
-            'phalcon / cphalcon',
-            'JedWatson / react - select',
-            'slimphp / Slim',
-            'thoughtbot / bourbon',
-            'hapijs / hapi',
-            'minio / minio',
-            'labstack / echo',
-            'matryer / bitbar',
-            'NetEase / pomelo',
-            'ruby - grape / grape',
-            'home - assistant / home - assistant',
-            'dotnet / coreclr',
-            'saltstack / salt',
-            'dotnet / roslyn',
-            'rwaldron / johnny - five',
-            'nicolargo / glances',
-            'sorin - ionescu / prezto',
-            'laravel / framework',
-            'Netflix / falcor',
-            'teamcapybara / capybara',
-            'ocornut / imgui',
-            'elastic / logstash',
-            'piwik / piwik',
-            'Ramotion / animated - tab - bar',
-            'MithrilJS / mithril.js',
-            'afaqurk / linux - dash',
-            'harthur / brain',
-            'buger / goreplay',
-            'svg / svgo',
-            'TTTAttributedLabel / TTTAttributedLabel',
-            'google / WebFundamentals',
-            'SeleniumHQ / selenium',
-            'Grouper / FlatUIKit'
+            'labstack/echo',
+            'matryer/bitbar',
+            'NetEase/pomelo',
+            'ruby-grape/grape',
+            'home-assistant/home-assistant',
+            'dotnet/coreclr',
+            'saltstack/salt',
+            'dotnet/roslyn',
+            'rwaldron/johnny-five',
+            'nicolargo/glances',
+            'sorin-ionescu/prezto',
+            'laravel/framework',
+            'Netflix/falcor',
+            'teamcapybara/capybara',
+            'ocornut/imgui',
+            'elastic/logstash',
+            'piwik/piwik',
+            'Ramotion/animated-tab-bar',
+            'MithrilJS/mithril.js',
+            'afaqurk/linux-dash',
+            'harthur/brain',
+            'buger/goreplay',
+            'svg/svgo',
+            'TTTAttributedLabel/TTTAttributedLabel',
+            'google/WebFundamentals',
+            'SeleniumHQ/selenium',
+            'Grouper/FlatUIKit'
         ]
     def getRepositories(self):
         with open('global_original.csv', 'r', encoding='utf-8') as csvfile:
@@ -152,11 +89,11 @@ class EventAnalysis():
     def collectEvent(self,repo):
         repo_name = repo.replace('/',':')
         # Create Directory
-        if not os.path.exists(repo_name):
-            os.makedirs(repo_name)
+        if not os.path.exists('SNA_User_Event_System/'+repo_name):
+            os.makedirs('SNA_User_Event_System/'+repo_name)
         print (repo_name)
         # Create csv file
-        with open(repo_name+'/'+repo_name+'.csv', 'a') as csvfile:
+        with open('SNA_User_Event_System/'+repo_name+'/'+repo_name+'.csv', 'a') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(
                 ['repo_name', 'event_type', 'pullrequest_comment_actor', 'pullrequest_actor', 'commit_comment_actor',
@@ -217,7 +154,7 @@ class EventAnalysis():
                 'density':0
             },
         }
-        with open(repo_name+'/'+repo_name+'.csv','r') as csvfile:
+        with open('SNA_User_Event_System/'+repo_name+'/'+repo_name+'.csv','r') as csvfile:
             reader = (csv.reader(csvfile))
             for row in reader:
                 if row[1] == 'PullRequestReviewCommentEvent':
@@ -267,7 +204,7 @@ class EventAnalysis():
                         user_eigenvector[i] = 0
                 print('FINISHED EIGENVECTOR CENTRALITY...')
 
-                with open(repo_name + '/SNA_' + event + '_' + repo_name + '.csv', 'a') as csvfile:
+                with open('SNA_User_Event_System/'+repo_name + '/SNA_' + event + '_' + repo_name + '.csv', 'a') as csvfile:
                     writer = csv.writer(csvfile)
                     writer.writerow(['user', 'indegree_centrality', 'outdegree_centrality', 'closeness_centrality', 'betweenness_centrality',
                                      'eigenvector_centrality'])
@@ -297,7 +234,7 @@ class EventAnalysis():
         repo_name = repo.replace('/',':')
         user = []
         user_type = {}
-        with open(repo_name+'/'+repo_name+'.csv', 'r') as csvfile:
+        with open('SNA_User_Event_System/'+repo_name+'/'+repo_name+'.csv', 'r') as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
                 if row[1] == 'IssueCommentEvent' or row[1] == 'IssueComment':
@@ -321,7 +258,7 @@ class EventAnalysis():
                     'Commit':0,
                     'CommitComment':0,
                 }
-        with open(repo_name+'/'+repo_name+'.csv', 'r') as csvfile:
+        with open('SNA_User_Event_System/'+repo_name+'/'+repo_name+'.csv', 'r') as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
                 if row[1] == 'IssueCommentEvent':
@@ -346,7 +283,7 @@ class EventAnalysis():
                         if u == row[5]:
                             user_type[u]['Commit']+=1
 
-        with open(repo_name+'/'+repo_name+'_TypeCount'+'.csv','a') as csvfile:
+        with open('SNA_User_Event_System/'+repo_name+'/'+repo_name+'_TypeCount'+'.csv','a') as csvfile:
             writer = csv.DictWriter(csvfile,fieldnames=['user','Issue','IssueComment','Commit','CommitComment','PullRequest','PullRequestComment'])
             writer.writeheader()
             for user in user_type:
@@ -357,7 +294,7 @@ class EventAnalysis():
         print (repo+' User Categorize Starts...')
         repo_name = repo.replace('/',':')
         user_type = {}
-        with open(repo_name+'/'+repo_name+'_TypeCount.csv','r') as csvfile:
+        with open('SNA_User_Event_System/'+repo_name+'/'+repo_name+'_TypeCount.csv','r') as csvfile:
             reader = csv.reader(csvfile)
             next(reader)
             for row in reader:
@@ -403,13 +340,13 @@ class EventAnalysis():
                     if countedevents == binarytype:
                         user_type[row[0]]='Type ' + str(int(binarytype,2))
 
-        with open(repo_name+'/'+repo_name+'_Categorized.csv','a') as csvfile:
+        with open('SNA_User_Event_System/'+repo_name+'/'+repo_name+'_Categorized.csv','a') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(['user','type'])
             for user in user_type:
                 writer.writerow([user,user_type[user]])
     def categorizedUserCount(self):
-        with open('RepoCategorized_global_please.csv', 'a',encoding='utf-8') as csvfile:
+        with open('RepoCategorized.csv', 'a',encoding='utf-8') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=['Repository'] + ['Type '+str(i) for i in range(1, 64)])
             writer.writeheader()
             for repo in self.REPOSITORY:
@@ -420,7 +357,7 @@ class EventAnalysis():
                 type_dict['Repository'] = repo_name
                 print (repo+' Categorized User Count Starts...')
                 type = []
-                with open('SNA_User_Event_global/'+repo_name+'/'+repo_name+'_Categorized.csv','r',encoding='utf-8') as csvfile:
+                with open('SNA_User_Event_System/'+repo_name+'/'+repo_name+'_Categorized.csv','r',encoding='utf-8') as csvfile:
                     reader = csv.reader(csvfile)
                     next(reader)
                     for row in reader:
@@ -503,7 +440,7 @@ class EventAnalysis():
                         'density': 0,
                     }
                 }
-                with open(repo_name + '/' + repo_name + '.csv', 'r') as csvfile:
+                with open('SNA_User_Event_System/'+repo_name + '/' + repo_name + '.csv', 'r') as csvfile:
                     reader = (csv.reader(csvfile))
                     for row in reader:
                         if row[1] == 'PullRequestReviewCommentEvent' or row[1] == 'PullRequestReviewComment':
@@ -625,9 +562,9 @@ for repo in bquery.REPOSITORY:
     bquery.snaAnalysis(repo)
     bquery.typeCount(repo)
     bquery.userCategorize(repo)
-bquery.categorizedUserCount()
-bquery.snaDensity()
+# bquery.categorizedUserCount()
+# bquery.snaDensity()
 # print(datetime.datetime.now())
 # bquery.classifySWType()
-bquery.countRatio()
+# bquery.countRatio()
 # bquery.getSWCategory()
