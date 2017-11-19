@@ -53,9 +53,9 @@ class EventAnalysis():
         self.REPOSITORY = [
         ]
     def getRepositories(self):
-        with open('application_original.csv', 'r', encoding='utf-8') as csvfile:
+        with open('snaMaxAvg_national_list.csv', 'r', encoding='utf-8') as csvfile:
             reader = csv.reader(csvfile)
-            # next(reader)
+            next(reader)
             for i in reader:
                 self.REPOSITORY.append(i[0])
         # print (self.REPOSITORY)
@@ -527,17 +527,117 @@ class EventAnalysis():
             print(i)
         print (count)
         # print (set(application) & set(global_list))
+
+    ################# CommitComment->CommitCommentEvent!!!!!!!!!!! ##################
+    def snaMaxAvg(self):
+        # with open('snaMaxAvg_national_list.csv','r') as csvfile:
+        #     reader = csv.reader(csvfile)
+        #     next(reader)
+        #     for row in reader:
+        #         print (row[0])
+        with open('snaMaxAvg_national_result.csv','w') as csvfile:
+            writer = csv.DictWriter(csvfile,fieldnames=[
+                'Repository',
+                'commit_in_max',
+                'commit_in_avg',
+                'commit_out_max',
+                'commit_out_avg',
+                'pullre_in_max',
+                'pullre_in_avg',
+                'pullre_out_max',
+                'pullre_out_avg',
+                'issue_in_max',
+                'issue_in_avg',
+                'issue_out_max',
+                'issue_out_avg',
+            ])
+            writer.writeheader()
+
+            for repo in self.REPOSITORY:
+                snaMaxAvg = {
+                    'Repository':repo,
+                    'commit_in_max':0.0,
+                    'commit_in_avg':0.0,
+                    'commit_out_max':0.0,
+                    'commit_out_avg':0.0,
+                    'pullre_in_max':0.0,
+                    'pullre_in_avg':0.0,
+                    'pullre_out_max':0.0,
+                    'pullre_out_avg':0.0,
+                    'issue_in_max':0.0,
+                    'issue_in_avg':0.0,
+                    'issue_out_max':0.0,
+                    'issue_out_avg':0.0,
+                }
+                for event in ['IssueComment','CommitComment','PullRequestReviewComment']:
+                    if not os.path.exists('SNA_User_Event_domestic/'+repo+'/SNA_'+event+'_'+repo+'.csv'):
+                        print ('no repo')
+                        with open('SNA_User_Event_domestic/'+repo+'/SNA_'+event+'_'+repo+'.csv','w') as csvfile3:
+                            writer3 = csv.writer(csvfile3)
+                            writer3.writerow(['user','indegree_centrality','outdegree_centrality','closeness_centrality','betweenness_centrality','eigenvector_centrality'])
+                    with open('SNA_User_Event_domestic/'+repo+'/SNA_'+event+'_'+repo+'.csv','r') as csvfile2:
+                        print ('Start '+repo)
+                        reader2 = csv.reader(csvfile2)
+                        indegree = []
+                        outdegree = []
+                        next(reader2)
+
+                        for row in reader2:
+                            indegree.append(float(row[1]))
+                            outdegree.append(float(row[2]))
+                        if event == 'IssueComment':
+                            if len(indegree) == 0:
+                                snaMaxAvg['issue_in_avg'] = 0.0
+                                snaMaxAvg['issue_in_max'] = 0.0
+                            if len(outdegree) == 0:
+                                snaMaxAvg['issue_out_avg'] = 0.0
+                                snaMaxAvg['issue_out_max'] = 0.0
+                            else:
+                                snaMaxAvg['issue_out_avg'] = sum(outdegree)/len(outdegree)
+                                snaMaxAvg['issue_out_max'] = max(outdegree)
+                                snaMaxAvg['issue_in_avg'] = sum(indegree) / len(indegree)
+                                snaMaxAvg['issue_in_max'] = max(indegree)
+                        elif event == 'CommitComment':
+                            if len(indegree) == 0:
+                                snaMaxAvg['commit_in_avg'] = 0.0
+                                snaMaxAvg['commit_in_max'] = 0.0
+                            if len(outdegree) == 0:
+                                snaMaxAvg['commit_out_avg'] = 0.0
+                                snaMaxAvg['commit_out_max'] = 0.0
+                            else:
+                                snaMaxAvg['commit_out_avg'] = sum(outdegree)/len(outdegree)
+                                snaMaxAvg['commit_out_max'] = max(outdegree)
+                                snaMaxAvg['commit_in_avg'] = sum(indegree) / len(indegree)
+                                snaMaxAvg['commit_in_max'] = max(indegree)
+                        elif event == 'PullRequestReviewComment':
+                            if len(indegree) == 0:
+                                snaMaxAvg['pullre_in_avg'] = 0.0
+                                snaMaxAvg['pullre_in_max'] = 0.0
+                            if len(outdegree) == 0:
+                                snaMaxAvg['pullre_out_avg'] = 0.0
+                                snaMaxAvg['pullre_out_max'] = 0.0
+                            else:
+                                snaMaxAvg['pullre_out_avg'] = sum(outdegree)/len(outdegree)
+                                snaMaxAvg['pullre_out_max'] = max(outdegree)
+                                snaMaxAvg['pullre_in_avg'] = sum(indegree) / len(indegree)
+                                snaMaxAvg['pullre_in_max'] = max(indegree)
+                import pprint
+                pprint.pprint (snaMaxAvg)
+                writer.writerow(snaMaxAvg)
+
+
 print(datetime.datetime.now())
 bquery = EventAnalysis()
 bquery.getRepositories()
-for repo in bquery.REPOSITORY:
-    bquery.collectEvent(repo)
-    bquery.snaAnalysis(repo)
-    bquery.typeCount(repo)
-    bquery.userCategorize(repo)
+# for repo in bquery.REPOSITORY:
+#     bquery.collectEvent(repo)
+#     bquery.snaAnalysis(repo)
+#     bquery.typeCount(repo)
+#     bquery.userCategorize(repo)
 # bquery.categorizedUserCount()
 # bquery.snaDensity()
 # print(datetime.datetime.now())
 # bquery.classifySWType()
 # bquery.countRatio()
 # bquery.getSWCategory()
+bquery.snaMaxAvg()
