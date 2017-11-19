@@ -51,36 +51,9 @@ class EventAnalysis():
         service_account = 'Github-SNA-6cf7f22bd6fb.json'
         self.client = bigquery.Client.from_service_account_json(service_account)
         self.REPOSITORY = [
-            'labstack/echo',
-            'matryer/bitbar',
-            'NetEase/pomelo',
-            'ruby-grape/grape',
-            'home-assistant/home-assistant',
-            'dotnet/coreclr',
-            'saltstack/salt',
-            'dotnet/roslyn',
-            'rwaldron/johnny-five',
-            'nicolargo/glances',
-            'sorin-ionescu/prezto',
-            'laravel/framework',
-            'Netflix/falcor',
-            'teamcapybara/capybara',
-            'ocornut/imgui',
-            'elastic/logstash',
-            'piwik/piwik',
-            'Ramotion/animated-tab-bar',
-            'MithrilJS/mithril.js',
-            'afaqurk/linux-dash',
-            'harthur/brain',
-            'buger/goreplay',
-            'svg/svgo',
-            'TTTAttributedLabel/TTTAttributedLabel',
-            'google/WebFundamentals',
-            'SeleniumHQ/selenium',
-            'Grouper/FlatUIKit'
         ]
     def getRepositories(self):
-        with open('global_original.csv', 'r', encoding='utf-8') as csvfile:
+        with open('application_original.csv', 'r', encoding='utf-8') as csvfile:
             reader = csv.reader(csvfile)
             # next(reader)
             for i in reader:
@@ -89,11 +62,11 @@ class EventAnalysis():
     def collectEvent(self,repo):
         repo_name = repo.replace('/',':')
         # Create Directory
-        if not os.path.exists('SNA_User_Event_System/'+repo_name):
-            os.makedirs('SNA_User_Event_System/'+repo_name)
+        if not os.path.exists('SNA_User_Event_Application/'+repo_name):
+            os.makedirs('SNA_User_Event_Application/'+repo_name)
         print (repo_name)
         # Create csv file
-        with open('SNA_User_Event_System/'+repo_name+'/'+repo_name+'.csv', 'a') as csvfile:
+        with open('SNA_User_Event_Application/'+repo_name+'/'+repo_name+'.csv', 'a') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(
                 ['repo_name', 'event_type', 'pullrequest_comment_actor', 'pullrequest_actor', 'commit_comment_actor',
@@ -154,7 +127,7 @@ class EventAnalysis():
                 'density':0
             },
         }
-        with open('SNA_User_Event_System/'+repo_name+'/'+repo_name+'.csv','r') as csvfile:
+        with open('SNA_User_Event_Application/'+repo_name+'/'+repo_name+'.csv','r') as csvfile:
             reader = (csv.reader(csvfile))
             for row in reader:
                 if row[1] == 'PullRequestReviewCommentEvent':
@@ -204,7 +177,7 @@ class EventAnalysis():
                         user_eigenvector[i] = 0
                 print('FINISHED EIGENVECTOR CENTRALITY...')
 
-                with open('SNA_User_Event_System/'+repo_name + '/SNA_' + event + '_' + repo_name + '.csv', 'a') as csvfile:
+                with open('SNA_User_Event_Application/'+repo_name + '/SNA_' + event + '_' + repo_name + '.csv', 'a') as csvfile:
                     writer = csv.writer(csvfile)
                     writer.writerow(['user', 'indegree_centrality', 'outdegree_centrality', 'closeness_centrality', 'betweenness_centrality',
                                      'eigenvector_centrality'])
@@ -234,7 +207,7 @@ class EventAnalysis():
         repo_name = repo.replace('/',':')
         user = []
         user_type = {}
-        with open('SNA_User_Event_System/'+repo_name+'/'+repo_name+'.csv', 'r') as csvfile:
+        with open('SNA_User_Event_Application/'+repo_name+'/'+repo_name+'.csv', 'r') as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
                 if row[1] == 'IssueCommentEvent' or row[1] == 'IssueComment':
@@ -258,7 +231,7 @@ class EventAnalysis():
                     'Commit':0,
                     'CommitComment':0,
                 }
-        with open('SNA_User_Event_System/'+repo_name+'/'+repo_name+'.csv', 'r') as csvfile:
+        with open('SNA_User_Event_Application/'+repo_name+'/'+repo_name+'.csv', 'r') as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
                 if row[1] == 'IssueCommentEvent':
@@ -283,7 +256,7 @@ class EventAnalysis():
                         if u == row[5]:
                             user_type[u]['Commit']+=1
 
-        with open('SNA_User_Event_System/'+repo_name+'/'+repo_name+'_TypeCount'+'.csv','a') as csvfile:
+        with open('SNA_User_Event_Application/'+repo_name+'/'+repo_name+'_TypeCount'+'.csv','a') as csvfile:
             writer = csv.DictWriter(csvfile,fieldnames=['user','Issue','IssueComment','Commit','CommitComment','PullRequest','PullRequestComment'])
             writer.writeheader()
             for user in user_type:
@@ -294,7 +267,7 @@ class EventAnalysis():
         print (repo+' User Categorize Starts...')
         repo_name = repo.replace('/',':')
         user_type = {}
-        with open('SNA_User_Event_System/'+repo_name+'/'+repo_name+'_TypeCount.csv','r') as csvfile:
+        with open('SNA_User_Event_Application/'+repo_name+'/'+repo_name+'_TypeCount.csv','r') as csvfile:
             reader = csv.reader(csvfile)
             next(reader)
             for row in reader:
@@ -340,7 +313,7 @@ class EventAnalysis():
                     if countedevents == binarytype:
                         user_type[row[0]]='Type ' + str(int(binarytype,2))
 
-        with open('SNA_User_Event_System/'+repo_name+'/'+repo_name+'_Categorized.csv','a') as csvfile:
+        with open('SNA_User_Event_Application/'+repo_name+'/'+repo_name+'_Categorized.csv','a') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(['user','type'])
             for user in user_type:
@@ -440,7 +413,7 @@ class EventAnalysis():
                         'density': 0,
                     }
                 }
-                with open('SNA_User_Event_System/'+repo_name + '/' + repo_name + '.csv', 'r') as csvfile:
+                with open('SNA_User_Event_Application/'+repo_name + '/' + repo_name + '.csv', 'r') as csvfile:
                     reader = (csv.reader(csvfile))
                     for row in reader:
                         if row[1] == 'PullRequestReviewCommentEvent' or row[1] == 'PullRequestReviewComment':
@@ -556,7 +529,7 @@ class EventAnalysis():
         # print (set(application) & set(global_list))
 print(datetime.datetime.now())
 bquery = EventAnalysis()
-# bquery.getRepositories()
+bquery.getRepositories()
 for repo in bquery.REPOSITORY:
     bquery.collectEvent(repo)
     bquery.snaAnalysis(repo)
