@@ -53,7 +53,7 @@ class EventAnalysis():
         self.REPOSITORY = [
         ]
     def getRepositories(self):
-        with open('snaMaxAvg_national_list.csv', 'r', encoding='utf-8') as csvfile:
+        with open('system_original.csv', 'r', encoding='utf-8') as csvfile:
             reader = csv.reader(csvfile)
             next(reader)
             for i in reader:
@@ -127,7 +127,7 @@ class EventAnalysis():
                 'density':0
             },
         }
-        with open('SNA_User_Event_Application/'+repo_name+'/'+repo_name+'.csv','r') as csvfile:
+        with open('SNA_User_Event_System/'+repo_name+'/'+repo_name+'.csv','r',encoding='utf-8') as csvfile:
             reader = (csv.reader(csvfile))
             for row in reader:
                 if row[1] == 'PullRequestReviewCommentEvent':
@@ -177,7 +177,7 @@ class EventAnalysis():
                         user_eigenvector[i] = 0
                 print('FINISHED EIGENVECTOR CENTRALITY...')
 
-                with open('SNA_User_Event_Application/'+repo_name + '/SNA_' + event + '_' + repo_name + '.csv', 'a') as csvfile:
+                with open('SNA_User_Event_System/'+repo_name + '/SNA_' + event + '_' + repo_name + '.csv', 'w') as csvfile:
                     writer = csv.writer(csvfile)
                     writer.writerow(['user', 'indegree_centrality', 'outdegree_centrality', 'closeness_centrality', 'betweenness_centrality',
                                      'eigenvector_centrality'])
@@ -319,7 +319,7 @@ class EventAnalysis():
             for user in user_type:
                 writer.writerow([user,user_type[user]])
     def categorizedUserCount(self):
-        with open('RepoCategorized.csv', 'a',encoding='utf-8') as csvfile:
+        with open('RepoCategorized_System.csv', 'a',encoding='utf-8') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=['Repository'] + ['Type '+str(i) for i in range(1, 64)])
             writer.writeheader()
             for repo in self.REPOSITORY:
@@ -385,7 +385,7 @@ class EventAnalysis():
                         if kor == row[1]:
                             print (row[1])
     def snaDensity(self):
-        with open('RepoDensity.csv', 'a') as csvfile:
+        with open('RepoDensity_System.csv', 'a') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(['repo_name', 'PullRequestDensity', 'CommitDensity', 'IssueDensity', 'TotalDensity'])
 
@@ -413,7 +413,7 @@ class EventAnalysis():
                         'density': 0,
                     }
                 }
-                with open('SNA_User_Event_Application/'+repo_name + '/' + repo_name + '.csv', 'r') as csvfile:
+                with open('SNA_User_Event_System/'+repo_name + '/' + repo_name + '.csv', 'r') as csvfile:
                     reader = (csv.reader(csvfile))
                     for row in reader:
                         if row[1] == 'PullRequestReviewCommentEvent' or row[1] == 'PullRequestReviewComment':
@@ -479,7 +479,7 @@ class EventAnalysis():
 
                 writer.writerow([repo_name,sna['PullRequestReviewCommentEvent']['density'],sna['CommitCommentEvent']['density'],sna['IssueCommentEvent']['density'],sna['TotalEvent']['density']])
     def countRatio(self):
-        with open('국외_유형분류_이것이 진짜_ratio.csv','w') as csvfile:
+        with open('Repocategorized_ratio_System.csv','w') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(['Repository']+['Type '+str(i) for i in range(1, 64)])
             with open('국외_유형분류_이것이 진짜.csv','r',encoding='utf-8') as csvfile2:
@@ -488,7 +488,6 @@ class EventAnalysis():
                 for row in reader:
                     total = 0.0
                     ratio = []
-                    print (row[1:])
                     for type in row[1:]:
                         # print (type)
                         total += float(type)
@@ -510,7 +509,7 @@ class EventAnalysis():
             reader=csv.reader(csvfile)
             for row in reader:
                 application.append(row[0])
-        with open('RepoCategorized_global_please.csv','r') as csvfile2:
+        with open('snaMaxAvg_national_list.csv','r') as csvfile2:
             reader2=csv.reader(csvfile2)
             next(reader2)
             for row in reader2:
@@ -535,7 +534,7 @@ class EventAnalysis():
         #     next(reader)
         #     for row in reader:
         #         print (row[0])
-        with open('snaMaxAvg_national_result.csv','w') as csvfile:
+        with open('snaMaxAvg_System.csv','w') as csvfile:
             writer = csv.DictWriter(csvfile,fieldnames=[
                 'Repository',
                 'commit_in_max',
@@ -554,6 +553,7 @@ class EventAnalysis():
             writer.writeheader()
 
             for repo in self.REPOSITORY:
+                repo_name = repo.replace('/',':')
                 snaMaxAvg = {
                     'Repository':repo,
                     'commit_in_max':0.0,
@@ -569,14 +569,14 @@ class EventAnalysis():
                     'issue_out_max':0.0,
                     'issue_out_avg':0.0,
                 }
-                for event in ['IssueComment','CommitComment','PullRequestReviewComment']:
-                    if not os.path.exists('SNA_User_Event_domestic/'+repo+'/SNA_'+event+'_'+repo+'.csv'):
-                        print ('no repo')
-                        with open('SNA_User_Event_domestic/'+repo+'/SNA_'+event+'_'+repo+'.csv','w') as csvfile3:
-                            writer3 = csv.writer(csvfile3)
-                            writer3.writerow(['user','indegree_centrality','outdegree_centrality','closeness_centrality','betweenness_centrality','eigenvector_centrality'])
-                    with open('SNA_User_Event_domestic/'+repo+'/SNA_'+event+'_'+repo+'.csv','r') as csvfile2:
-                        print ('Start '+repo)
+                for event in ['IssueCommentEvent','CommitCommentEvent','PullRequestReviewCommentEvent']:
+                    # if not os.path.exists('SNA_User_Event_domestic/'+repo_name+'/SNA_'+event+'_'+repo_name+'.csv'):
+                    #     print ('no repo')
+                    #     with open('SNA_User_Event_System/'+repo_name+'/SNA_'+event+'_'+repo_name+'.csv','w') as csvfile3:
+                    #         writer3 = csv.writer(csvfile3)
+                    #         writer3.writerow(['user','indegree_centrality','outdegree_centrality','closeness_centrality','betweenness_centrality','eigenvector_centrality'])
+                    with open('SNA_User_Event_System/'+repo_name+'/SNA_'+event+'_'+repo_name+'.csv','r',encoding='utf-8') as csvfile2:
+                        print ('Start '+repo_name)
                         reader2 = csv.reader(csvfile2)
                         indegree = []
                         outdegree = []
@@ -585,7 +585,7 @@ class EventAnalysis():
                         for row in reader2:
                             indegree.append(float(row[1]))
                             outdegree.append(float(row[2]))
-                        if event == 'IssueComment':
+                        if event == 'IssueCommentEvent':
                             if len(indegree) == 0:
                                 snaMaxAvg['issue_in_avg'] = 0.0
                                 snaMaxAvg['issue_in_max'] = 0.0
@@ -597,7 +597,7 @@ class EventAnalysis():
                                 snaMaxAvg['issue_out_max'] = max(outdegree)
                                 snaMaxAvg['issue_in_avg'] = sum(indegree) / len(indegree)
                                 snaMaxAvg['issue_in_max'] = max(indegree)
-                        elif event == 'CommitComment':
+                        elif event == 'CommitCommentEvent':
                             if len(indegree) == 0:
                                 snaMaxAvg['commit_in_avg'] = 0.0
                                 snaMaxAvg['commit_in_max'] = 0.0
@@ -609,7 +609,7 @@ class EventAnalysis():
                                 snaMaxAvg['commit_out_max'] = max(outdegree)
                                 snaMaxAvg['commit_in_avg'] = sum(indegree) / len(indegree)
                                 snaMaxAvg['commit_in_max'] = max(indegree)
-                        elif event == 'PullRequestReviewComment':
+                        elif event == 'PullRequestReviewCommentEvent':
                             if len(indegree) == 0:
                                 snaMaxAvg['pullre_in_avg'] = 0.0
                                 snaMaxAvg['pullre_in_max'] = 0.0
@@ -621,8 +621,7 @@ class EventAnalysis():
                                 snaMaxAvg['pullre_out_max'] = max(outdegree)
                                 snaMaxAvg['pullre_in_avg'] = sum(indegree) / len(indegree)
                                 snaMaxAvg['pullre_in_max'] = max(indegree)
-                import pprint
-                pprint.pprint (snaMaxAvg)
+
                 writer.writerow(snaMaxAvg)
 
 
