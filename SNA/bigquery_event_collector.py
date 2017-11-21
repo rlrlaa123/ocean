@@ -53,7 +53,7 @@ class EventAnalysis():
         self.REPOSITORY = [
         ]
     def getRepositories(self):
-        with open('system_original.csv', 'r', encoding='utf-8') as csvfile:
+        with open('foundation_original.csv', 'r', encoding='utf-8') as csvfile:
             reader = csv.reader(csvfile)
             next(reader)
             for i in reader:
@@ -62,11 +62,11 @@ class EventAnalysis():
     def collectEvent(self,repo):
         repo_name = repo.replace('/',':')
         # Create Directory
-        if not os.path.exists('SNA_User_Event_Application/'+repo_name):
-            os.makedirs('SNA_User_Event_Application/'+repo_name)
+        if not os.path.exists('SNA_User_Event_Foundation/'+repo_name):
+            os.makedirs('SNA_User_Event_Foundation/'+repo_name)
         print (repo_name)
         # Create csv file
-        with open('SNA_User_Event_Application/'+repo_name+'/'+repo_name+'.csv', 'a') as csvfile:
+        with open('SNA_User_Event_Foundation/'+repo_name+'/'+repo_name+'.csv', 'a') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(
                 ['repo_name', 'event_type', 'pullrequest_comment_actor', 'pullrequest_actor', 'commit_comment_actor',
@@ -127,7 +127,7 @@ class EventAnalysis():
                 'density':0
             },
         }
-        with open('SNA_User_Event_System/'+repo_name+'/'+repo_name+'.csv','r',encoding='utf-8') as csvfile:
+        with open('SNA_User_Event_Foundation/'+repo_name+'/'+repo_name+'.csv','r',encoding='utf-8') as csvfile:
             reader = (csv.reader(csvfile))
             for row in reader:
                 if row[1] == 'PullRequestReviewCommentEvent':
@@ -177,7 +177,7 @@ class EventAnalysis():
                         user_eigenvector[i] = 0
                 print('FINISHED EIGENVECTOR CENTRALITY...')
 
-                with open('SNA_User_Event_System/'+repo_name + '/SNA_' + event + '_' + repo_name + '.csv', 'w') as csvfile:
+                with open('SNA_User_Event_Foundation/'+repo_name + '/SNA_' + event + '_' + repo_name + '.csv', 'w') as csvfile:
                     writer = csv.writer(csvfile)
                     writer.writerow(['user', 'indegree_centrality', 'outdegree_centrality', 'closeness_centrality', 'betweenness_centrality',
                                      'eigenvector_centrality'])
@@ -207,7 +207,7 @@ class EventAnalysis():
         repo_name = repo.replace('/',':')
         user = []
         user_type = {}
-        with open('SNA_User_Event_Application/'+repo_name+'/'+repo_name+'.csv', 'r') as csvfile:
+        with open('SNA_User_Event_Foundation/'+repo_name+'/'+repo_name+'.csv', 'r') as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
                 if row[1] == 'IssueCommentEvent' or row[1] == 'IssueComment':
@@ -231,7 +231,7 @@ class EventAnalysis():
                     'Commit':0,
                     'CommitComment':0,
                 }
-        with open('SNA_User_Event_Application/'+repo_name+'/'+repo_name+'.csv', 'r') as csvfile:
+        with open('SNA_User_Event_Foundation/'+repo_name+'/'+repo_name+'.csv', 'r') as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
                 if row[1] == 'IssueCommentEvent':
@@ -256,7 +256,7 @@ class EventAnalysis():
                         if u == row[5]:
                             user_type[u]['Commit']+=1
 
-        with open('SNA_User_Event_Application/'+repo_name+'/'+repo_name+'_TypeCount'+'.csv','a') as csvfile:
+        with open('SNA_User_Event_Foundation/'+repo_name+'/'+repo_name+'_TypeCount'+'.csv','a') as csvfile:
             writer = csv.DictWriter(csvfile,fieldnames=['user','Issue','IssueComment','Commit','CommitComment','PullRequest','PullRequestComment'])
             writer.writeheader()
             for user in user_type:
@@ -267,7 +267,7 @@ class EventAnalysis():
         print (repo+' User Categorize Starts...')
         repo_name = repo.replace('/',':')
         user_type = {}
-        with open('SNA_User_Event_Application/'+repo_name+'/'+repo_name+'_TypeCount.csv','r') as csvfile:
+        with open('SNA_User_Event_Foundation/'+repo_name+'/'+repo_name+'_TypeCount.csv','r') as csvfile:
             reader = csv.reader(csvfile)
             next(reader)
             for row in reader:
@@ -313,13 +313,13 @@ class EventAnalysis():
                     if countedevents == binarytype:
                         user_type[row[0]]='Type ' + str(int(binarytype,2))
 
-        with open('SNA_User_Event_Application/'+repo_name+'/'+repo_name+'_Categorized.csv','a') as csvfile:
+        with open('SNA_User_Event_Foundation/'+repo_name+'/'+repo_name+'_Categorized.csv','a') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(['user','type'])
             for user in user_type:
                 writer.writerow([user,user_type[user]])
     def categorizedUserCount(self):
-        with open('RepoCategorized_System.csv', 'a',encoding='utf-8') as csvfile:
+        with open('RepoCategorized_Foundation.csv', 'w',encoding='utf-8') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=['Repository'] + ['Type '+str(i) for i in range(1, 64)])
             writer.writeheader()
             for repo in self.REPOSITORY:
@@ -330,7 +330,7 @@ class EventAnalysis():
                 type_dict['Repository'] = repo_name
                 print (repo+' Categorized User Count Starts...')
                 type = []
-                with open('SNA_User_Event_System/'+repo_name+'/'+repo_name+'_Categorized.csv','r',encoding='utf-8') as csvfile:
+                with open('SNA_User_Event_Foundation/'+repo_name+'/'+repo_name+'_Categorized.csv','r',encoding='utf-8') as csvfile:
                     reader = csv.reader(csvfile)
                     next(reader)
                     for row in reader:
@@ -377,7 +377,7 @@ class EventAnalysis():
             korea = []
             for row in reader:
                 korea.append(row)
-            with open('../SNA_Cluster/4.2/Classification/Application SW.csv','r') as csvfile2:
+            with open('../SNA_Cluster/4.2/Classification/Foundation SW.csv','r') as csvfile2:
                 reader2 = csv.reader(csvfile2)
                 for row in reader2:
                     for kor in korea:
@@ -385,7 +385,7 @@ class EventAnalysis():
                         if kor == row[1]:
                             print (row[1])
     def snaDensity(self):
-        with open('RepoDensity_System.csv', 'a') as csvfile:
+        with open('RepoDensity_Foundation.csv', 'w') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(['repo_name', 'PullRequestDensity', 'CommitDensity', 'IssueDensity', 'TotalDensity'])
 
@@ -413,8 +413,9 @@ class EventAnalysis():
                         'density': 0,
                     }
                 }
-                with open('SNA_User_Event_System/'+repo_name + '/' + repo_name + '.csv', 'r') as csvfile:
+                with open('SNA_User_Event_Foundation/'+repo_name + '/' + repo_name + '.csv', 'r', encoding='utf-8') as csvfile:
                     reader = (csv.reader(csvfile))
+                    next(reader)
                     for row in reader:
                         if row[1] == 'PullRequestReviewCommentEvent' or row[1] == 'PullRequestReviewComment':
                             sna['PullRequestReviewCommentEvent']['node_list'].append(row[2])
@@ -479,10 +480,10 @@ class EventAnalysis():
 
                 writer.writerow([repo_name,sna['PullRequestReviewCommentEvent']['density'],sna['CommitCommentEvent']['density'],sna['IssueCommentEvent']['density'],sna['TotalEvent']['density']])
     def countRatio(self):
-        with open('Repocategorized_ratio_System.csv','w') as csvfile:
+        with open('Repocategorized_ratio_Foundation.csv','w') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(['Repository']+['Type '+str(i) for i in range(1, 64)])
-            with open('국외_유형분류_이것이 진짜.csv','r',encoding='utf-8') as csvfile2:
+            with open('RepoCategorized_Foundation.csv','r',encoding='utf-8') as csvfile2:
                 reader = csv.reader(csvfile2)
                 next(reader)
                 for row in reader:
@@ -534,7 +535,7 @@ class EventAnalysis():
         #     next(reader)
         #     for row in reader:
         #         print (row[0])
-        with open('snaMaxAvg_System.csv','w') as csvfile:
+        with open('snaMaxAvg_Foundation.csv','w') as csvfile:
             writer = csv.DictWriter(csvfile,fieldnames=[
                 'Repository',
                 'commit_in_max',
@@ -570,12 +571,12 @@ class EventAnalysis():
                     'issue_out_avg':0.0,
                 }
                 for event in ['IssueCommentEvent','CommitCommentEvent','PullRequestReviewCommentEvent']:
-                    # if not os.path.exists('SNA_User_Event_domestic/'+repo_name+'/SNA_'+event+'_'+repo_name+'.csv'):
-                    #     print ('no repo')
-                    #     with open('SNA_User_Event_System/'+repo_name+'/SNA_'+event+'_'+repo_name+'.csv','w') as csvfile3:
-                    #         writer3 = csv.writer(csvfile3)
-                    #         writer3.writerow(['user','indegree_centrality','outdegree_centrality','closeness_centrality','betweenness_centrality','eigenvector_centrality'])
-                    with open('SNA_User_Event_System/'+repo_name+'/SNA_'+event+'_'+repo_name+'.csv','r',encoding='utf-8') as csvfile2:
+                    if not os.path.exists('SNA_User_Event_Foundation/'+repo_name+'/SNA_'+event+'_'+repo_name+'.csv'):
+                        print ('no repo')
+                        with open('SNA_User_Event_Foundation/'+repo_name+'/SNA_'+event+'_'+repo_name+'.csv','w') as csvfile3:
+                            writer3 = csv.writer(csvfile3)
+                            writer3.writerow(['user','indegree_centrality','outdegree_centrality','closeness_centrality','betweenness_centrality','eigenvector_centrality'])
+                    with open('SNA_User_Event_Foundation/'+repo_name+'/SNA_'+event+'_'+repo_name+'.csv','r',encoding='utf-8') as csvfile2:
                         print ('Start '+repo_name)
                         reader2 = csv.reader(csvfile2)
                         indegree = []
@@ -628,15 +629,15 @@ class EventAnalysis():
 print(datetime.datetime.now())
 bquery = EventAnalysis()
 bquery.getRepositories()
-# for repo in bquery.REPOSITORY:
-#     bquery.collectEvent(repo)
-#     bquery.snaAnalysis(repo)
-#     bquery.typeCount(repo)
-#     bquery.userCategorize(repo)
-# bquery.categorizedUserCount()
-# bquery.snaDensity()
-# print(datetime.datetime.now())
+for repo in bquery.REPOSITORY:
+    bquery.collectEvent(repo)
+    bquery.snaAnalysis(repo)
+    bquery.typeCount(repo)
+    bquery.userCategorize(repo)
+bquery.categorizedUserCount()
+bquery.snaDensity()
 # bquery.classifySWType()
-# bquery.countRatio()
+bquery.countRatio()
 # bquery.getSWCategory()
 bquery.snaMaxAvg()
+print(datetime.datetime.now())
