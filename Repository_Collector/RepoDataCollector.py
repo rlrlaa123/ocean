@@ -187,6 +187,8 @@ def WriteCSV(json_parsed,field_name):
 
         if ';' in fieldnames_dict['description']:
             fieldnames_dict['description'] = fieldnames_dict['description'].replace(';', '')
+        if ';' in fieldnames_dict['homepage']:
+            fieldnames_dict['homepage'] = fieldnames_dict['homepage'].replace(';', '')
 
         with open('Repository_data.csv', 'a') as csvfile:
             writer = csv.DictWriter(csvfile,fieldnames=fieldnames+['Saved_DateTime'])
