@@ -56,7 +56,7 @@ class SNACluster():
                     self.result[i].remove(j)
     def create_graph(self):
         path = ""
-        data = pd.read_csv(path + '4/new_repo_topic_data4.csv', error_bad_lines=False, header=None,
+        data = pd.read_csv(path + '4.2/new_repo_topic_data4.2_small.csv', error_bad_lines=False, header=None,
                            sep=",", delimiter='\n')  # pandas 라이브러리를 이용해서 SNA 분석 csv 파일 불러오기
         # Creating node list
         node = []
@@ -81,6 +81,7 @@ class SNACluster():
 
         print (nx.number_of_nodes(self.G))
         print (nx.number_of_edges(self.G))
+
     def match_edgelist(self,row):
         cluster = row[1:]
         edges = []
@@ -126,13 +127,29 @@ class SNACluster():
                 print ('Finished Community '+row[0])
     def clustering(self,save_filename):
         partition = community.best_partition(self.G)
-        with open(save_filename,'a') as csvfile:
-            writer = csv.writer(csvfile)
-            for community_num in set(partition.values()):
-                print ("Community", community_num)
-                members = list_nodes = [nodes for nodes in partition.keys() if partition[nodes] == community_num]
-                print (members)
-                writer.writerow([community_num]+members)
+        # with open(save_filename,'a') as csvfile:
+        #     writer = csv.writer(csvfile)
+        #     for community_num in set(partition.values()):
+        #         print ("Community", community_num)
+        #         members = list_nodes = [nodes for nodes in partition.keys() if partition[nodes] == community_num]
+        #         print (members)
+        #         writer.writerow([community_num]+members)
+
+        # #drawing
+        size = float(len(set(partition.values())))
+        pos = nx.spring_layout(self.G)
+        count = 0.
+        for com in set(partition.values()):
+            count = count + 1.
+            list_nodes = [nodes for nodes in partition.keys()
+                          if partition[nodes] == com]
+            nx.draw_networkx_nodes(self.G, pos, list_nodes, node_size=1,
+                                   node_color=str(count / size))
+
+        nx.draw_networkx_edges(self.G, pos, alpha=0.5)
+
+        plt.show()
+
     def degree_centrality_custom(self,G):
         centrality = {}
         s = 1.0
@@ -219,7 +236,7 @@ class SNACluster():
                         writer.writerow([i, j])
                 print ('Finished Community ' + row[0])
 
-    def reading_classification(self):
+    def writing_classification_result(self):
         # from pprint import pprint
         # pprint(self.result)
         for i in self.result:
@@ -285,12 +302,12 @@ class SNACluster():
             reader = csv.reader(csvfile)
             for row in reader:
                 highest_centrality_topic = []
-                for topic in row[2:12]:
+                for topic in row[2:17]:
                     regex = re.compile("'(.+)'")
                     if not regex.findall(topic) == []:
                         word = regex.findall(topic)
                         highest_centrality_topic.append(word[0])
-                matched_topic = set(highest_centrality_topic) & set(self.result['System SW'])
+                matched_topic = set(highest_centrality_topic) & set(self.result['Application SW'])
                 if len(matched_topic) != 0:
                     print (matched_topic)
                     print (highest_centrality_topic)
@@ -299,30 +316,19 @@ class SNACluster():
 # print (inspect.getmembers(SNACluster, predicate=inspect.ismethod))
 sna = SNACluster()
 # pprint.pprint (dir(sna))
-# sna.create_graph()
-# sna.clustering('4/community_test.csv')
+sna.create_graph()
+sna.clustering('4/community_test.csv')
 # sna.centrality()
 # sna.centrality_parser()
 # sna.highest_centrality()
 # sna.match_created()
 # sna.clustering_partially()
-# sna.reading_classification()
+# sna.writing_classification_result()
 # sna.compare_classification()
 # sna.compare_highest_centrality_with_repository()
 
-# #drawing
-# size = float(len(set(partition.values())))
-# pos = nx.spring_layout(G)
-# count = 0.
-# for com in set(partition.values()) :
-#     count = count + 1.
-#     list_nodes = [nodes for nodes in partition.keys()
-#                                 if partition[nodes] == com]
-#     nx.draw_networkx_nodes(G, pos, list_nodes, node_size = 1,
-#                                 node_color = str(count / size))
-#
-
-# nx.draw_networkx_edges(G,pos,alpha=0.5)
-
+# G=nx.complete_graph(5)
+# nx.draw_networkx(G,node_size=3000,node_color='black')
 # plt.show()
+
 # sna.compare_highest_centrality_with_IITP()
