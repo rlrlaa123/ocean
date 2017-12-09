@@ -16,6 +16,15 @@ import datetime
 
 from google.cloud import bigquery
 
+BOT_LIST = []
+with open('bot_list.csv', 'r') as csvfile:
+    reader = csv.reader(csvfile)
+    next(reader)
+    for row in reader:
+        BOT_LIST.append(row[0])
+        BOT_LIST.append(int(row[0]))
+    BOT_LIST = list(set(BOT_LIST))
+
 QUERY = """
 SELECT
   repo_name,
@@ -50,23 +59,23 @@ class EventAnalysis():
         # self.client = bigquery.Client()
         service_account = 'Github-SNA-6cf7f22bd6fb.json'
         self.client = bigquery.Client.from_service_account_json(service_account)
-        self.REPOSITORY = [
-        ]
-    def getRepositories(self):
-        with open('foundation_original.csv', 'r', encoding='utf-8') as csvfile:
+        self.REPOSITORY = []
+
+    def getRepositories(self,get_repository_from):
+        with open(get_repository_from, 'r', encoding='utf-8') as csvfile:
             reader = csv.reader(csvfile)
             next(reader)
             for i in reader:
-                self.REPOSITORY.append(i[0])
+                self.REPOSITORY.append(i[1])
         # print (self.REPOSITORY)
-    def collectEvent(self,repo):
+    def collectEvent(self,repo,folder_name,id,pw):
         repo_name = repo.replace('/',':')
         # Create Directory
-        if not os.path.exists('SNA_User_Event_Foundation/'+repo_name):
-            os.makedirs('SNA_User_Event_Foundation/'+repo_name)
+        if not os.path.exists('SNA_User_Event_'+folder_name+'/'+repo_name):
+            os.makedirs('SNA_User_Event_'+folder_name+'/'+repo_name)
         print (repo_name)
         # Create csv file
-        with open('SNA_User_Event_Foundation/'+repo_name+'/'+repo_name+'.csv', 'a') as csvfile:
+        with open('SNA_User_Event_'+folder_name+'/'+repo_name+'/'+repo_name+'.csv', 'a') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(
                 ['repo_name', 'event_type', 'pullrequest_comment_actor', 'pullrequest_actor', 'commit_comment_actor',
@@ -86,6 +95,8 @@ class EventAnalysis():
             }
             counter_list = {}
             for row in result:
+                if row[0] in BOT_LIST or row[1] in BOT_LIST or row[2] in BOT_LIST or row[3] in BOT_LIST or row[4] in BOT_LIST or row[5] in BOT_LIST or row[6] in BOT_LIST or row[7] in BOT_LIST:
+                    continue
                 if row[1] == 'PullRequestReviewCommentEvent' or row[1] == 'PullRequestReviewComment':
                     data.append([row[0],row[1],row[2],row[3],0,0,0,0])
                     count_list['PullRequestReviewCommentEvent'].append((row[2], row[3]))
@@ -95,6 +106,7 @@ class EventAnalysis():
                 elif row[1] == 'IssueCommentEvent' or row[1] == 'IssueComment':
                     data.append([row[0],row[1],0,0,0,0,row[6],row[7]])
                     count_list['IssueCommentEvent'].append((row[6], row[7]))
+
             for count in count_list:
                 counter_list[count] = collections.Counter(count_list[count])
 
@@ -103,12 +115,12 @@ class EventAnalysis():
                     if event == 'PullRequestReviewCommentEvent' or event == 'PullRequestReviewComment':
                         writer.writerow([repo,event,row[0],row[1],0,0,0,0,counter_list[event][row]])
                     elif event == 'CommitCommentEvent' or event == 'CommitComment':
-                        commit_user_id = self.collectCommitUser(row[1],repo)
+                        commit_user_id = self.collectCommitUser(row[1],repo,id,pw)
                         writer.writerow([repo,event,0,0,row[0],commit_user_id,0,0,counter_list[event][row]])
                     elif event == 'IssueCommentEvent' or event == 'IssueComment':
                         writer.writerow([repo,event,0,0,0,0,row[0],row[1],counter_list[event][row]])
         print ('Query Finished...\n')
-    def snaAnalysis(self,repo):
+    def snaAnalysis(self,repo,folder_name):
         repo_name = repo.replace('/',':')
         sna = {
             'PullRequestReviewCommentEvent': {
@@ -127,7 +139,7 @@ class EventAnalysis():
                 'density':0
             },
         }
-        with open('SNA_User_Event_Foundation/'+repo_name+'/'+repo_name+'.csv','r',encoding='utf-8') as csvfile:
+        with open('SNA_User_Event_'+folder_name+'/'+repo_name+'/'+repo_name+'.csv','r',encoding='utf-8') as csvfile:
             reader = (csv.reader(csvfile))
             for row in reader:
                 if row[1] == 'PullRequestReviewCommentEvent':
@@ -177,7 +189,7 @@ class EventAnalysis():
                         user_eigenvector[i] = 0
                 print('FINISHED EIGENVECTOR CENTRALITY...')
 
-                with open('SNA_User_Event_Foundation/'+repo_name + '/SNA_' + event + '_' + repo_name + '.csv', 'w') as csvfile:
+                with open('SNA_User_Event_'+folder_name+'/'+repo_name + '/SNA_' + event + '_' + repo_name + '.csv', 'w') as csvfile:
                     writer = csv.writer(csvfile)
                     writer.writerow(['user', 'indegree_centrality', 'outdegree_centrality', 'closeness_centrality', 'betweenness_centrality',
                                      'eigenvector_centrality'])
@@ -202,12 +214,12 @@ class EventAnalysis():
                 print(event+' Density: '+str(sna[event]['density']))
             except ZeroDivisionError:
                 pass
-    def typeCount(self,repo):
+    def typeCount(self,repo,folder_name):
         print (repo+' Type Count Starts...')
         repo_name = repo.replace('/',':')
         user = []
         user_type = {}
-        with open('SNA_User_Event_Foundation/'+repo_name+'/'+repo_name+'.csv', 'r') as csvfile:
+        with open('SNA_User_Event_'+folder_name+'/'+repo_name+'/'+repo_name+'.csv', 'r',encoding='utf-8') as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
                 if row[1] == 'IssueCommentEvent' or row[1] == 'IssueComment':
@@ -231,7 +243,7 @@ class EventAnalysis():
                     'Commit':0,
                     'CommitComment':0,
                 }
-        with open('SNA_User_Event_Foundation/'+repo_name+'/'+repo_name+'.csv', 'r') as csvfile:
+        with open('SNA_User_Event_Foundation/'+repo_name+'/'+repo_name+'.csv', 'r',encoding='utf-8') as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
                 if row[1] == 'IssueCommentEvent':
@@ -256,18 +268,18 @@ class EventAnalysis():
                         if u == row[5]:
                             user_type[u]['Commit']+=1
 
-        with open('SNA_User_Event_Foundation/'+repo_name+'/'+repo_name+'_TypeCount'+'.csv','a') as csvfile:
+        with open('SNA_User_Event_'+folder_name+'/'+repo_name+'/'+repo_name+'_TypeCount'+'.csv','a') as csvfile:
             writer = csv.DictWriter(csvfile,fieldnames=['user','Issue','IssueComment','Commit','CommitComment','PullRequest','PullRequestComment'])
             writer.writeheader()
             for user in user_type:
                 user_type[user]['user']=user
                 writer.writerow(user_type[user])
-    def userCategorize(self,repo):
+    def userCategorize(self,repo,folder_name):
         # 'Issue','IssueComment','Commit','CommitComment','PullRequest','PullRequestComment',
         print (repo+' User Categorize Starts...')
         repo_name = repo.replace('/',':')
         user_type = {}
-        with open('SNA_User_Event_Foundation/'+repo_name+'/'+repo_name+'_TypeCount.csv','r') as csvfile:
+        with open('SNA_User_Event_'+folder_name+'/'+repo_name+'/'+repo_name+'_TypeCount.csv','r',encoding='utf-8') as csvfile:
             reader = csv.reader(csvfile)
             next(reader)
             for row in reader:
@@ -313,13 +325,13 @@ class EventAnalysis():
                     if countedevents == binarytype:
                         user_type[row[0]]='Type ' + str(int(binarytype,2))
 
-        with open('SNA_User_Event_Foundation/'+repo_name+'/'+repo_name+'_Categorized.csv','a') as csvfile:
+        with open('SNA_User_Event_'+folder_name+'/'+repo_name+'/'+repo_name+'_Categorized.csv','a') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(['user','type'])
             for user in user_type:
                 writer.writerow([user,user_type[user]])
-    def categorizedUserCount(self):
-        with open('RepoCategorized_Foundation.csv', 'w',encoding='utf-8') as csvfile:
+    def categorizedUserCount(self,folder_name):
+        with open('SNA_User_Event_'+folder_name+'/'+'RepoCategorized_'+folder_name+'.csv', 'w',encoding='utf-8') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=['Repository'] + ['Type '+str(i) for i in range(1, 64)])
             writer.writeheader()
             for repo in self.REPOSITORY:
@@ -330,7 +342,7 @@ class EventAnalysis():
                 type_dict['Repository'] = repo_name
                 print (repo+' Categorized User Count Starts...')
                 type = []
-                with open('SNA_User_Event_Foundation/'+repo_name+'/'+repo_name+'_Categorized.csv','r',encoding='utf-8') as csvfile:
+                with open('SNA_User_Event_'+folder_name+'/'+repo_name+'/'+repo_name+'_Categorized.csv','r',encoding='utf-8') as csvfile:
                     reader = csv.reader(csvfile)
                     next(reader)
                     for row in reader:
@@ -340,17 +352,16 @@ class EventAnalysis():
                         type_dict[i] = counter[i]
                 # print (type_dict)
                 writer.writerow(type_dict)
-    def Request(self,url):
-        id = 'rlrlaa123'
-        pw = 'ehehdd009'
+    def Request(self,url,github_id,github_pw):
+        id = github_id
+        pw = github_pw
         return requests.get(url,auth=(id,pw))
-    def collectCommitUser(self,commit_id,repo_name):
+    def collectCommitUser(self,commit_id,repo_name,id,pw):
         try:
             # time.sleep(1.5)
             url_commit_id = 'https://api.github.com/repos/'+repo_name+'/commits/'+str(commit_id)
             print (url_commit_id)
-            content = self.Request(url_commit_id).json()
-            url_limit = 'https://api.github.com/rate_limit'
+            content = self.Request(url_commit_id,id,pw).json()
             if content['committer'] != None:
                 user_login = content['committer']['login']
                 url_commit_user = 'https://api.github.com/users/' + str(user_login)
@@ -384,8 +395,8 @@ class EventAnalysis():
                         # print (row[1])
                         if kor == row[1]:
                             print (row[1])
-    def snaDensity(self):
-        with open('RepoDensity_Foundation.csv', 'w') as csvfile:
+    def snaDensity(self,folder_name):
+        with open('SNA_User_Event_'+folder_name+'/'+'RepoDensity_'+folder_name+'.csv', 'w') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(['repo_name', 'PullRequestDensity', 'CommitDensity', 'IssueDensity', 'TotalDensity'])
 
@@ -413,7 +424,7 @@ class EventAnalysis():
                         'density': 0,
                     }
                 }
-                with open('SNA_User_Event_Foundation/'+repo_name + '/' + repo_name + '.csv', 'r', encoding='utf-8') as csvfile:
+                with open('SNA_User_Event_'+folder_name+'/'+repo_name + '/' + repo_name + '.csv', 'r', encoding='utf-8') as csvfile:
                     reader = (csv.reader(csvfile))
                     next(reader)
                     for row in reader:
@@ -479,11 +490,11 @@ class EventAnalysis():
                 print ('Total Density: '+ str(sna['TotalEvent']['density']))
 
                 writer.writerow([repo_name,sna['PullRequestReviewCommentEvent']['density'],sna['CommitCommentEvent']['density'],sna['IssueCommentEvent']['density'],sna['TotalEvent']['density']])
-    def countRatio(self):
-        with open('Repocategorized_ratio_Foundation.csv','w') as csvfile:
+    def countRatio(self,folder_name):
+        with open('SNA_User_Event_'+folder_name+'/'+'Repocategorized_ratio_'+folder_name+'.csv','w') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(['Repository']+['Type '+str(i) for i in range(1, 64)])
-            with open('RepoCategorized_Foundation.csv','r',encoding='utf-8') as csvfile2:
+            with open('SNA_User_Event_'+folder_name+'/'+'RepoCategorized_'+folder_name+'.csv','r',encoding='utf-8') as csvfile2:
                 reader = csv.reader(csvfile2)
                 next(reader)
                 for row in reader:
@@ -529,13 +540,8 @@ class EventAnalysis():
         # print (set(application) & set(global_list))
 
     ################# CommitComment->CommitCommentEvent!!!!!!!!!!! ##################
-    def snaMaxAvg(self):
-        # with open('snaMaxAvg_national_list.csv','r') as csvfile:
-        #     reader = csv.reader(csvfile)
-        #     next(reader)
-        #     for row in reader:
-        #         print (row[0])
-        with open('snaMaxAvg_Foundation.csv','w') as csvfile:
+    def snaMaxAvg(self,folder_name):
+        with open('SNA_User_Event_'+folder_name+'/'+'snaMaxAvg_'+folder_name+'.csv','w') as csvfile:
             writer = csv.DictWriter(csvfile,fieldnames=[
                 'Repository',
                 'commit_in_max',
@@ -571,12 +577,12 @@ class EventAnalysis():
                     'issue_out_avg':0.0,
                 }
                 for event in ['IssueCommentEvent','CommitCommentEvent','PullRequestReviewCommentEvent']:
-                    if not os.path.exists('SNA_User_Event_Foundation/'+repo_name+'/SNA_'+event+'_'+repo_name+'.csv'):
+                    if not os.path.exists('SNA_User_Event_'+folder_name+'/'+repo_name+'/SNA_'+event+'_'+repo_name+'.csv'):
                         print ('no repo')
-                        with open('SNA_User_Event_Foundation/'+repo_name+'/SNA_'+event+'_'+repo_name+'.csv','w') as csvfile3:
+                        with open('SNA_User_Event_'+folder_name+'/'+repo_name+'/SNA_'+event+'_'+repo_name+'.csv','w') as csvfile3:
                             writer3 = csv.writer(csvfile3)
                             writer3.writerow(['user','indegree_centrality','outdegree_centrality','closeness_centrality','betweenness_centrality','eigenvector_centrality'])
-                    with open('SNA_User_Event_Foundation/'+repo_name+'/SNA_'+event+'_'+repo_name+'.csv','r',encoding='utf-8') as csvfile2:
+                    with open('SNA_User_Event_'+folder_name+'/'+repo_name+'/SNA_'+event+'_'+repo_name+'.csv','r',encoding='utf-8') as csvfile2:
                         print ('Start '+repo_name)
                         reader2 = csv.reader(csvfile2)
                         indegree = []
@@ -622,22 +628,27 @@ class EventAnalysis():
                                 snaMaxAvg['pullre_out_max'] = max(outdegree)
                                 snaMaxAvg['pullre_in_avg'] = sum(indegree) / len(indegree)
                                 snaMaxAvg['pullre_in_max'] = max(indegree)
-
                 writer.writerow(snaMaxAvg)
 
 
 print(datetime.datetime.now())
 bquery = EventAnalysis()
-bquery.getRepositories()
+
+folder_name = 'Global_20171210'
+get_repository_from = 'global_200.csv'
+id = 'rlrlaa123'
+pw = 'ehehdd009'
+
+# bquery.getRepositories(get_repository_from)
 for repo in bquery.REPOSITORY:
-    bquery.collectEvent(repo)
-    bquery.snaAnalysis(repo)
-    bquery.typeCount(repo)
-    bquery.userCategorize(repo)
-bquery.categorizedUserCount()
-bquery.snaDensity()
-# bquery.classifySWType()
-bquery.countRatio()
+    bquery.collectEvent(repo,folder_name,id,pw)
+    bquery.snaAnalysis(repo,folder_name)
+    bquery.typeCount(repo,folder_name)
+    bquery.userCategorize(repo,folder_name)
+bquery.categorizedUserCount(folder_name)
+bquery.snaDensity(folder_name)
+# bquery.classifySWType(folder_name)
+bquery.countRatio(folder_name)
 # bquery.getSWCategory()
-bquery.snaMaxAvg()
+bquery.snaMaxAvg(folder_name)
 print(datetime.datetime.now())
