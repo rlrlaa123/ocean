@@ -59,7 +59,7 @@ class EventAnalysis():
         # self.client = bigquery.Client()
         service_account = 'Github-SNA-6cf7f22bd6fb.json'
         self.client = bigquery.Client.from_service_account_json(service_account)
-        self.REPOSITORY = []
+        self.REPOSITORY = ['apache/tajo']
 
     def getRepositories(self,get_repository_from):
         with open(get_repository_from, 'r', encoding='utf-8') as csvfile:
@@ -367,8 +367,8 @@ class EventAnalysis():
                 url_commit_user = 'https://api.github.com/users/' + str(user_login)
                 print (url_commit_user)
                 url_limit = 'https://api.github.com/rate_limit'
-                print(self.Request(url_limit).json()['rate']['remaining'])
-                content = self.Request(url_commit_user).json()
+                print(self.Request(url_limit,id,pw).json()['rate']['remaining'])
+                content = self.Request(url_commit_user,id,pw).json()
                 return content['id']
             # elif content['message'] == 'Not Found':
             #     raise NotFoundError
@@ -629,26 +629,3 @@ class EventAnalysis():
                                 snaMaxAvg['pullre_in_avg'] = sum(indegree) / len(indegree)
                                 snaMaxAvg['pullre_in_max'] = max(indegree)
                 writer.writerow(snaMaxAvg)
-
-
-print(datetime.datetime.now())
-bquery = EventAnalysis()
-
-folder_name = 'Global_20171210'
-get_repository_from = 'global_200.csv'
-id = 'rlrlaa123'
-pw = 'ehehdd009'
-
-# bquery.getRepositories(get_repository_from)
-for repo in bquery.REPOSITORY:
-    bquery.collectEvent(repo,folder_name,id,pw)
-    bquery.snaAnalysis(repo,folder_name)
-    bquery.typeCount(repo,folder_name)
-    bquery.userCategorize(repo,folder_name)
-bquery.categorizedUserCount(folder_name)
-bquery.snaDensity(folder_name)
-# bquery.classifySWType(folder_name)
-bquery.countRatio(folder_name)
-# bquery.getSWCategory()
-bquery.snaMaxAvg(folder_name)
-print(datetime.datetime.now())
