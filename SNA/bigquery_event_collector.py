@@ -59,12 +59,15 @@ class EventAnalysis():
         # self.client = bigquery.Client()
         service_account = 'Github-SNA-6cf7f22bd6fb.json'
         self.client = bigquery.Client.from_service_account_json(service_account)
-        self.REPOSITORY = ['apache/tajo']
+        self.REPOSITORY = []
 
-    def getRepositories(self,get_repository_from):
+    def getRepositories(self,get_repository_from,header):
         with open(get_repository_from, 'r', encoding='utf-8') as csvfile:
             reader = csv.reader(csvfile)
-            next(reader)
+            if (header):
+                next(reader)
+            else:
+                pass
             for i in reader:
                 self.REPOSITORY.append(i[1])
         # print (self.REPOSITORY)
@@ -243,7 +246,7 @@ class EventAnalysis():
                     'Commit':0,
                     'CommitComment':0,
                 }
-        with open('SNA_User_Event_Foundation/'+repo_name+'/'+repo_name+'.csv', 'r',encoding='utf-8') as csvfile:
+        with open('SNA_User_Event_'+folder_name+'/'+repo_name+'/'+repo_name+'.csv', 'r',encoding='utf-8') as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
                 if row[1] == 'IssueCommentEvent':
